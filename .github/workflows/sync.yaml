@@ -1,0 +1,52 @@
+on:
+  push:
+    branches:
+      - sync
+  pull_request:
+  schedule:
+    - cron: '0 0 */1 * *'
+
+name: Sync
+
+jobs:
+  sync-from-upstream:
+    name: Sync-From-Upstream
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 2
+      - name: Fetch upstream
+        run: |
+          git clone -b cn --depth=1 ${GIT_URL} webpack
+        env:
+          GIT_URL: https://github.com/docschina/webpack.js.org
+      - name: Generate SUMMARY
+        env:
+          SRC_FOLDER: webpack/src/content
+          GITBOOK_TITLE: "[Webpack 中文文档](https://github.com/docschina/webpack.js.org)"
+        run: |
+          set -x
+          mkdir -p ${SRC_FOLDER}/.github/workflows
+          cp -a .github/workflows/gitbook.yaml ${SRC_FOLDER}/.github/workflows/
+          cp book.json ${SRC_FOLDER}
+          cd ${SRC_FOLDER}
+          mv index.md README.md
+          npm init -f
+          npm install gitbook-summary
+          npx book sm -t "${GITBOOK_TITLE}" -i node_modules
+          rm -rf node_modules package.json package-lock.json
+          ls -la
+      - name: Push docs src
+        if: github.event_name == 'push' || github.event_name == 'schedule'
+        uses: docker://pcit/pages
+        env:
+          PCIT_EMAIL: khs1994@khs1994.com
+          # 必须使用自己的 token, actions 的 token 不会触发 master 的 actions
+          PCIT_GIT_TOKEN: ${{ secrets.PCIT_GIT_TOKEN }}
+          PCIT_GIT_URL: github.com/${{ github.repository }}
+          PCIT_KEEP_HISTORY: "1"
+          PCIT_LOCAL_DIR: webpack/src/content
+          PCIT_MESSAGE: Sync from docschina/webpack.js.org by PCIT ${{ github.sha }}
+          PCIT_TARGET_BRANCH: master
+          PCIT_USERNAME: khs1994

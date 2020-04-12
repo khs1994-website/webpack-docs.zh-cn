@@ -8,7 +8,7 @@ contributors:
   - madhavarshney
 ---
 
-`Compiler` 模块是 webpack 的支柱引擎，它通过 [CLI](/api/cli) 或 [Node API](/api/node) 传递的所有选项，创建出一个 compilation 实例。它扩展(extend)自 `Tapable` 类，以便注册和调用插件。大多数面向用户的插件，会先在 `Compiler` 上注册。
+`Compiler` 模块是 webpack 的支柱引擎，它通过 [CLI](/api/cli) 或 [Node API](/api/node) 传递的所有选项，创建出一个 compilation 实例。它扩展(extend)自 `Tapable` 类，以便注册和调用插件。大多数面向用户的插件会首先在 `Compiler` 上注册。
 
 T> 此模块会暴露在 `webpack.Compiler`，可以直接通过这种方式使用。关于更多信息，请查看[这个示例](https://github.com/pksjce/webpack-internal-examples/tree/master/compiler-example)。
 
@@ -128,7 +128,7 @@ environment 安装完成之后，执行插件。
 
 `SyncHook`
 
-一个新的编译(compilation)创建之后，钩入(hook into) compiler。
+一个新的编译(compilation)创建之前，钩入(hook into) compiler。
 
 参数：`compilationParams`
 

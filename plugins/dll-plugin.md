@@ -18,7 +18,7 @@ related:
 
 ## `DllPlugin`
 
-这个插件是在一个额外的独立的 webpack 设置中创建一个只有 dll 的 bundle(dll-only-bundle)。 这个插件会生成一个名为 `manifest.json` 的文件，这个文件是用来让 [`DLLReferencePlugin`](/plugins/dll-plugin#dllreferenceplugin) 映射到相关的依赖上去的。
+这个插件是在一个额外的独立的 webpack 设置中创建一个只有 dll 的 bundle(dll-only-bundle)。 这个插件会生成一个名为 `manifest.json` 的文件，这个文件是用来让 [`DllReferencePlugin`](/plugins/dll-plugin#dllreferenceplugin) 映射到相关的依赖上去的。
 
 - `context` (optional): manifest 文件中请求的上下文(context)(默认值为 webpack 的上下文(context))
 - `name`: 暴露出的 DLL 的函数名 ([TemplatePaths](https://github.com/webpack/webpack/blob/master/lib/TemplatedPathPlugin.js): `[hash]` & `[name]` )
@@ -37,7 +37,7 @@ new webpack.DllPlugin(options);
 
 这个插件是在 webpack 主配置文件中设置的， 这个插件把只有 dll 的 bundle(们)(dll-only-bundle(s)) 引用到需要的预编译的依赖。
 
-* `context`: (__绝对路径__) manifest (或者是内容属性)中请求的上下文
+* `context`: (**绝对路径**) 是内容属性(bundle 后的 dll 文件) 或者 manifest (打包内容和manifest在同路径下)中请求的上下文
 * `manifest`: 包含 `content` 和 `name` 的对象，或者在编译时(compilation)的一个用于加载的 JSON manifest 绝对路径
 * `content` (optional): 请求到模块 id 的映射 (默认值为 `manifest.content`)
 * `name` (optional): dll 暴露的地方的名称 (默认值为 `manifest.name`) (可参考 [`externals`](/configuration/externals/))

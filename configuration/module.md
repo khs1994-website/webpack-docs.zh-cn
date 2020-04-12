@@ -62,9 +62,9 @@ module.exports = {
 
 条件有两种输入值：
 
-1. resource：请求文件的绝对路径。它已经根据 [`resolve` 规则](/configuration/resolve)解析。
+1. resource：资源文件的绝对路径。它已经根据 [`resolve` 规则](/configuration/resolve)解析。
 
-2. issuer: 被请求资源(requested the resource)的模块文件的绝对路径。是导入时的位置。
+2. issuer: 请求者的文件绝对路径。是导入时的位置。
 
 __例如:__ 从 `app.js` `导入 './style.css'`，resource 是 `/path/to/style.css`. issuer 是 `/path/to/app.js`。
 
@@ -204,7 +204,7 @@ W> 由于需要支持 `Rule.options` 和 `UseEntry.options`，`Rule.use`，`Rule
 - 将选项设置为 `false`，将禁用解析器。
 - 将选项设置为 `true`，或不修改将其保留为 `undefined`，可以启用解析器。
 
-然而，一些解析器(parser)插件可能不光只接收一个布尔值。例如，内部的 `NodeStuffPlugin` 差距，可以接收一个对象，而不是 `true`，来为特定的规则添加额外的选项。
+然而，一些解析器(parser)插件可能不光只接收一个布尔值。例如，内部的 `NodeStuffPlugin` 插件，可以接收一个对象，而不是 `true`，来为特定的规则添加额外的选项。
 
 __示例__（默认的插件解析器选项）：
 

@@ -20,6 +20,7 @@
   * [入口起点(entry points)](concepts/entry-points.md)
   * [模块热替换(hot module replacement)](concepts/hot-module-replacement.md)
   * [概念](concepts/index.md)
+  * [Loader](concepts/loaders.md)
   * [Manifest](concepts/manifest.md)
   * [模式(mode)](concepts/mode.md)
   * [模块解析(module resolution)](concepts/module-resolution.md)

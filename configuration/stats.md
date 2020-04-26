@@ -1,6 +1,6 @@
 ---
-title: 统计信息(stats)
-sort: 15
+title: Stats
+sort: 18
 contributors:
   - SpaceK33z
   - sallar
@@ -8,23 +8,27 @@ contributors:
   - ldrick
   - jasonblanchard
   - byzyk
-  - renjithvk
+  - renjithspace
   - Raiondesu
   - EugeneHlushko
   - grgur
+  - anshumanv
+  - pixel-ray
 ---
 
-如果你不希望使用 `quiet` 或 `noInfo` 这样的不显示信息，而是又不想得到全部的信息，只是想要获取某部分 bundle 的信息，使用 stats 选项是比较好的折衷方式。
+The `stats` option lets you precisely control what bundle information gets displayed. This can be a nice middle ground if you don't want to use `quiet` or `noInfo` because you want some bundle information, but not all of it.
 
-T> 对于 webpack-dev-server，这个属性要放在 `devServer` 对象里。
+T> For webpack-dev-server, this property needs to be in the `devServer` object.
 
-W> 在使用 Node.js API 时，此选项无效。
+T> For webpack-dev-middleware, this property needs to be in the webpack-dev-middleware's `options` object.
+
+W> This option does not have any effect when using the Node.js API.
 
 ## `stats`
 
 `object` `string`
 
-有一些预设选项，可作为快捷方式。像这样使用它们：
+There are some presets available to use as a shortcut. Use them like this:
 
 ```js
 module.exports = {
@@ -33,202 +37,263 @@ module.exports = {
 };
 ```
 
-| Preset | Alternative | Description |
-|--------|-------------|-------------|
-| `"errors-only"` | _none_ | 只在发生错误时输出 |
-| `"minimal"`     | _none_ | 只在发生错误或有新的编译时输出 |
-| `"none"`        | `false` | 没有输出 |
-| `"normal"`      | `true`  | 标准输出 |
-| `"verbose"`     | _none_ | 全部输出 |
+| Preset              | Alternative | Description                                                    |
+| ------------------- | ----------- | -------------------------------------------------------------- |
+| `'errors-only'`     | _none_      | Only output when errors happen                                 |
+| `'errors-warnings'` | _none_      | Only output errors and warnings happen                         |
+| `'minimal'`         | _none_      | Only output when errors or new compilation happen              |
+| `'none'`            | `false`     | Output nothing                                                 |
+| `'normal'`          | `true`      | Standard output                                                |
+| `'verbose'`         | _none_      | Output everything                                              |
+| `'detailed'`        | _none_      | Output everything except `chunkModules` and `chunkRootModules` |
 
-对于更加精细的控制，下列这些选项可以准确地控制并展示你想要的信息。请注意，此对象中的所有选项都是可选的。
+For more granular control, it is possible to specify exactly what information you want. Please note that all of the options in this object are optional.
 
-<!-- eslint-skip -->
+### `stats.all`
 
-```js
-module.exports = {
-  //...
-  stats: {
-    // 未定义选项时，stats 选项的备用值(fallback value)（优先级高于 webpack 本地默认值）
-    all: undefined,
-
-    // 添加资源信息
-    assets: true,
-
-    // 对资源按指定的字段进行排序
-    // 你可以使用 `!field` 来反转排序。
-    // Some possible values: 'id' (default), 'name', 'size', 'chunks', 'failed', 'issuer'
-    // For a complete list of fields see the bottom of the page
-    assetsSort: "field",
-
-    // 添加构建日期和构建时间信息
-    builtAt: true,
-
-    // 添加缓存（但未构建）模块的信息
-    cached: true,
-
-    // 显示缓存的资源（将其设置为 `false` 则仅显示输出的文件）
-    cachedAssets: true,
-
-    // 添加 children 信息
-    children: true,
-
-    // 添加 chunk 信息（设置为 `false` 能允许较少的冗长输出）
-    chunks: true,
-
-    // 添加 namedChunkGroups 信息
-    chunkGroups: true,
-
-    // 将构建模块信息添加到 chunk 信息
-    chunkModules: true,
-
-    // 添加 chunk 和 chunk merge 来源的信息
-    chunkOrigins: true,
-
-    // 按指定的字段，对 chunk 进行排序
-    // 你可以使用 `!field` 来反转排序。默认是按照 `id` 排序。
-    // Some other possible values: 'name', 'size', 'chunks', 'failed', 'issuer'
-    // For a complete list of fields see the bottom of the page
-    chunksSort: "field",
-
-    // 用于缩短 request 的上下文目录
-    context: "../src/",
-
-    // `webpack --colors` 等同于
-    colors: false,
-
-    // 显示每个模块到入口起点的距离(distance)
-    depth: false,
-
-    // 通过对应的 bundle 显示入口起点
-    entrypoints: false,
-
-    // 添加 --env information
-    env: false,
-
-    // 添加错误信息
-    errors: true,
-
-    // 添加错误的详细信息（就像解析日志一样）
-    errorDetails: true,
-
-    // 将资源显示在 stats 中的情况排除
-    // 这可以通过 String, RegExp, 获取 assetName 的函数来实现
-    // 并返回一个布尔值或如下所述的数组。
-    excludeAssets: "filter" | /filter/ | (assetName) => true | false |
-      ["filter"] | [/filter/] | [(assetName) => true|false],
-
-    // 将模块显示在 stats 中的情况排除
-    // 这可以通过 String, RegExp, 获取 moduleSource 的函数来实现
-    // 并返回一个布尔值或如下所述的数组。
-    excludeModules: "filter" | /filter/ | (moduleSource) => true | false |
-      ["filter"] | [/filter/] | [(moduleSource) => true|false],
-
-    // 查看 excludeModules
-    exclude: "filter" | /filter/ | (moduleSource) => true | false |
-          ["filter"] | [/filter/] | [(moduleSource) => true|false],
-
-    // 添加 compilation 的哈希值
-    hash: true,
-
-    // 设置要显示的模块的最大数量
-    maxModules: 15,
-
-    // 添加构建模块信息
-    modules: true,
-
-    // 按指定的字段，对模块进行排序
-    // 你可以使用 `!field` 来反转排序。默认是按照 `id` 排序。
-    // Some other possible values: 'name', 'size', 'chunks', 'failed', 'issuer'
-    // For a complete list of fields see the bottom of the page
-    modulesSort: "field",
-
-    // 显示警告/错误的依赖和来源（从 webpack 2.5.0 开始）
-    moduleTrace: true,
-
-    // 当文件大小超过 `performance.maxAssetSize` 时显示性能提示
-    performance: true,
-
-    // 显示模块的导出
-    providedExports: false,
-
-    // 添加 public path 的信息
-    publicPath: true,
-
-    // 添加模块被引入的原因
-    reasons: true,
-
-    // 添加模块的源码
-    source: false,
-
-    // 添加时间信息
-    timings: true,
-
-    // 显示哪个模块导出被用到
-    usedExports: false,
-
-    // 添加 webpack 版本信息
-    version: true,
-
-    // 添加警告
-    warnings: true,
-
-    // 过滤警告显示（从 webpack 2.4.0 开始），
-    // 可以是 String, Regexp, 一个获取 warning 的函数
-    // 并返回一个布尔值或上述组合的数组。第一个匹配到的为胜(First match wins.)。
-    warningsFilter: "filter" | /filter/ | ["filter", /filter/] | (warning) => true|false
-  }
-}
-```
-
-If you want to use one of the pre-defined behaviours e.g. `'minimal'` but still override one or more of the rules, see [the source code](https://github.com/webpack/webpack/blob/master/lib/Stats.js#L1394-L1401). You would want to copy the configuration options from `case 'minimal': ...` and add your additional rules while providing an object to `stats`.
-
-__webpack.config.js__
+A fallback value for stats options when an option is not defined. It has precedence over local webpack defaults.
 
 ```javascript
 module.exports = {
-  //..
+  //...
   stats: {
-    // copied from `'minimal'`
-    all: false,
-    modules: true,
-    maxModules: 0,
-    errors: true,
-    warnings: true,
-    // our additional options
-    moduleTrace: true,
-    errorDetails: true
+    all: undefined
   }
 };
 ```
 
-### Sorting fields
+### `stats.assets`
 
-For `assetsSort`, `chunksSort` and `moduleSort` there are several possible fields that you can sort items by:
+`boolean = true`
 
-- `id` is the item's id;
-- `name` - a item's name that was assigned to it upon importing;
-- `size` - a size of item in bytes;
-- `chunks` - what chunks the item originates from (for example, if there are multiple subchunks for one chunk - the subchunks will be grouped together according to their main chunk);
-- `errors` - amount of errors in items;
-- `warnings` - amount of warnings in items;
-- `failed` - whether the item has failed compilation;
-- `cacheable` - whether the item is cacheable;
-- `built` - whether the asset has been built;
-- `prefetched` - whether the asset will be prefetched;
-- `optional` - whether the asset is optional;
-- `identifier` - identifier of the item;
-- `index` - item's processing index;
-- `index2`
-- `profile`
-- `issuer` - an identifier of the issuer;
-- `issuerId` - an id of the issuer;
-- `issuerName` - a name of the issuer;
-- `issuerPath` - a full issuer object. There's no real need to sort by this field;
+Tells `stats` whether to show the asset information. Set `stats.assets` to `false` to hide it.
 
-### Colors
+```javascript
+module.exports = {
+  //...
+  stats: {
+    assets: false
+  }
+};
+```
 
-You can specify your own terminal output colors using [ANSI escape sequences](https://en.wikipedia.org/wiki/ANSI_escape_code)
+### `stats.assetsSort`
+
+`string = 'id'`
+
+Tells `stats` to sort the assets by a given field. All of the [sorting fields](#sorting-fields) are allowed to be used as values for `stats.assetsSort`. Use `!` prefix in the value to reverse the sort order by a given field.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    assetsSort: '!size'
+  }
+};
+```
+
+### `stats.builtAt`
+
+`boolean = true`
+
+Tells `stats` whether to add the build date and the build time information. Set `stats.builtAt` to `false` to hide it.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    builtAt: false
+  }
+};
+```
+
+### `stats.moduleAssets`
+
+`boolean = true`
+
+Tells `stats` whether to add information about assets inside modules. Set `stats.moduleAssets` to `false` to hide it.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    moduleAssets: false
+  }
+};
+```
+
+### `stats.cached`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the cached modules (not the ones that were built).
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    cached: false
+  }
+};
+```
+
+### `stats.cachedAssets`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the cached assets. Setting `stats.cachedAssets` to `false` will tell `stats` to only show the emitted files (not the ones that were built).
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    cachedAssets: false
+  }
+};
+```
+
+### `stats.children`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the children.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    children: false
+  }
+};
+```
+
+### `stats.chunks`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the chunk. Setting `stats.chunks` to `false` results in a less verbose output.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunks: false
+  }
+};
+```
+
+### `stats.chunkGroups`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the `namedChunkGroups`.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkGroups: false
+  }
+};
+```
+
+### `stats.chunkModules`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the built modules to information about the chunk.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkModules: false
+  }
+};
+```
+
+### `stats.chunkRootModules`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the root modules of chunks. Applied if `stats.chunks = true`.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkRootModules: false
+  }
+};
+```
+
+### `stats.chunkOrigins`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the origins of chunks and chunk merging.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunkOrigins: false
+  }
+};
+```
+
+### `stats.chunksSort`
+
+`string = 'id'`
+
+Tells `stats` to sort the chunks by a given field. All of the [sorting fields](#sorting-fields) are allowed to be used as values for `stats.chunksSort`. Use `!` prefix in the value to reverse the sort order by a given field.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    chunksSort: 'name'
+  }
+};
+```
+
+### `stats.context`
+
+`string = '../src/'`
+
+Sets the context directory for shortening the request information.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    context: '../src/components/'
+  }
+};
+```
+
+### `stats.colors`
+
+`boolean = false` `object`
+
+Tells `stats` whether to output in the different colors.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    colors: true
+  }
+};
+```
+
+ It is also available as a CLI flag:
+
+```bash
+webpack-cli --colors
+```
+
+ You can specify your own terminal output colors using [ANSI escape sequences](https://en.wikipedia.org/wiki/ANSI_escape_code)
 
 ```js
 module.exports = {
@@ -236,5 +301,529 @@ module.exports = {
   colors: {
     green: '\u001b[32m',
   },
+};
+```
+
+### `stats.depth`
+
+`boolean = false`
+
+Tells `stats` whether to display the distance from the entry point for each module.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    depth: true
+  }
+};
+```
+
+### `stats.entrypoints`
+
+`boolean = true`
+
+Tells `stats` whether to display the entry points with the corresponding bundles.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    entrypoints: false
+  }
+};
+```
+
+### `stats.env`
+
+`boolean = false`
+
+Tells `stats` whether to display the `--env` information.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    env: true
+  }
+};
+```
+
+### `stats.orphanModules`
+
+`boolean = false`
+
+Tells `stats` whether to hide `orphan` modules. A module is an `orphan` if it is not included in any chunk. Orphan modules are hidden by default in `stats`.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    orphanModules: true
+  }
+};
+```
+
+### `stats.errors`
+
+`boolean = true`
+
+Tells `stats` whether to display the errors.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    errors: false
+  }
+};
+```
+
+### `stats.errorDetails`
+
+`boolean = true`
+
+Tells `stats` whether to add the details to the errors.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    errorDetails: false
+  }
+};
+```
+
+### `stats.errorStack`
+
+`boolean = true`
+
+Tells `stats` whether to show stack trace of errors.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    errorStack: false
+  }
+};
+```
+
+### `stats.excludeAssets`
+
+`array = []: string | RegExp | function (assetName) => boolean` `string` `RegExp` `function (assetName) => boolean`
+
+Tells `stats` to exclude the matching assets information. This can be done with a `string`, a `RegExp`, a `function` that is getting the assets name as an argument and returns a `boolean`. `stats.excludeAssets` can be an `array` of any of the above.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    excludeAssets: [
+      'filter',
+      /filter/,
+      (assetName) => assetName.contains('moduleA')
+    ]
+  }
+};
+```
+
+### `stats.excludeModules`
+
+`array = []: string | RegExp | function (assetName) => boolean` `string` `RegExp` `function (assetName) => boolean` `boolean: false`
+
+Tells `stats` to exclude the matching modules information. This can be done with a `string`, a `RegExp`, a `function` that is getting the module's source as an argument and returns a `boolean`. `stats.excludeModules` can be an `array` of any of the above. `stats.excludeModules`'s configuration [is merged](https://github.com/webpack/webpack/blob/master/lib/Stats.js#L215) with the `stats.exclude`'s configuration value.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    excludeModules: [
+      'filter',
+      /filter/,
+      (moduleSource) => true
+    ]
+  }
+};
+```
+
+Setting `stats.excludeModules` to `false` will disable the exclude behaviour.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    excludeModules: false
+  }
+};
+```
+
+### `stats.exclude`
+
+See [`stats.excludeModules`](#statsexcludemodules).
+
+### `stats.hash`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the hash of the compilation.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    hash: false
+  }
+};
+```
+
+### `stats.logging`
+
+`string = 'info': 'none' | 'error' | 'warn' | 'info' | 'log' | 'verbose'` `boolean`
+
+Tells `stats` whether to add logging output.
+
+- `'none'`, `false` - disable logging
+- `'error'` - errors only
+- `'warn'` - errors and warnings only
+- `'info'` - errors, warnings, and info messages
+- `'log'`, `true` - errors, warnings, info messages, log messages, groups, clears. Collapsed groups are displayed in a collapsed state.
+- `'verbose'` - log everything except debug and trace. Collapsed groups are displayed in expanded state.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    logging: 'verbose'
+  }
+};
+```
+
+### `stats.loggingDebug`
+
+`array = []: string | RegExp | function (name) => boolean` `string` `RegExp` `function (name) => boolean`
+
+Tells `stats` to include the debug information of the specified loggers such as Plugins or Loaders. When [`stats.logging`](#statslogging) is set to `false`, `stats.loggingDebug` option is ignored.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    loggingDebug: [
+      'MyPlugin',
+      /MyPlugin/,
+      /webpack/, // To get core logging
+      (name) => name.contains('MyPlugin')
+    ]
+  }
+};
+```
+
+### `stats.loggingTrace`
+
+`boolean = true`
+
+Enable stack traces in the logging output for errors, warnings and traces. Set `stats.loggingTrace` to hide the trace.
+
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    loggingTrace: false
+  }
+};
+```
+
+### `stats.maxModules`
+
+`number = 15`
+
+Set the maximum number of modules to be shown.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    maxModules: 5
+  }
+};
+```
+
+### `stats.modules`
+
+`boolean = true`
+
+Tells `stats` whether to add information about the built modules.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    modules: false
+  }
+};
+```
+
+### `stats.modulesSort`
+
+`string = 'id'`
+
+Tells `stats` to sort the modules by a given field. All of the [sorting fields](#sorting-fields) are allowed to be used as values for `stats.modulesSort`. Use `!` prefix in the value to reverse the sort order by a given field.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    modulesSort: 'size'
+  }
+};
+```
+
+### `stats.moduleTrace`
+
+`boolean = true`
+
+Tells `stats` to show dependencies and the origin of warnings/errors. `stats.moduleTrace` is available since webpack 2.5.0.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    moduleTrace: false
+  }
+};
+```
+
+### `stats.outputPath`
+
+`boolean = true`
+
+Tells `stats` to show the `outputPath`.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    outputPath: false
+  }
+};
+```
+
+### `stats.performance`
+
+`boolean = true`
+
+Tells `stats` to show performance hint when the file size exceeds [`performance.maxAssetSize`](/configuration/performance/#performancemaxassetsize).
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    performance: false
+  }
+};
+```
+
+### `stats.preset`
+
+`string` `boolean: false`
+
+Sets the [preset](/configuration/stats/#stats) for the type of information that gets displayed. It is useful for [extending stats behaviours](/configuration/stats/#extending-stats-behaviours).
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    preset: 'minimal'
+  }
+};
+```
+
+Setting value of `stats.preset` to `false` tells webpack to use `'none'` [stats preset](/configuration/stats/#stats).
+
+### `stats.providedExports`
+
+`boolean = false`
+
+Tells `stats` to show the exports of the modules.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    providedExports: true
+  }
+};
+```
+
+### `stats.publicPath`
+
+`boolean = true`
+
+Tells `stats` to show the `publicPath`.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    publicPath: false
+  }
+};
+```
+
+### `stats.reasons`
+
+`boolean = true`
+
+Tells `stats` to add information about the reasons of why modules are included.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    reasons: false
+  }
+};
+```
+
+### `stats.source`
+
+`boolean = false`
+
+Tells `stats` to add the source code of modules.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    source: true
+  }
+};
+```
+
+### `stats.timings`
+
+`boolean = true`
+
+Tells `stats` to add the timing information.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    timings: false
+  }
+};
+```
+
+### `stats.usedExports`
+
+`boolean = false`
+
+Tells `stats` whether to show which exports of a module are used.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    usedExports: true
+  }
+};
+```
+
+### `stats.version`
+
+`boolean = true`
+
+Tells `stats` to add information about the webpack version used.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    version: false
+  }
+};
+```
+
+### `stats.warnings`
+
+`boolean = true`
+
+Tells `stats` to add warnings.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    warnings: false
+  }
+};
+```
+
+### `stats.warningsFilter`
+
+`array = []: string | RegExp | function (warning) => boolean` `string` `RegExp` `function (warning) => boolean`
+
+Tells `stats` to exclude the warnings that are matching given filters. This can be done with a `string`, a `RegExp`, a `function` that is getting a warning as an argument and returns a `boolean`. `stats.warningsFilter` can be an `array` of any of the above.
+
+```javascript
+module.exports = {
+  //...
+  stats: {
+    warningsFilter: [
+      'filter',
+      /filter/,
+      (warning) => true
+    ]
+  }
+};
+```
+
+### `stats.chunkRelations`
+
+`boolean = false`
+
+Tells `stats` to display chunk parents, children and siblings.
+
+### Sorting fields
+
+For `assetsSort`, `chunksSort` and `modulesSort` there are several possible fields that you can sort items by:
+
+- `'id'` is the item's id;
+- `'name'` - a item's name that was assigned to it upon importing;
+- `'size'` - a size of item in bytes;
+- `'chunks'` - what chunks the item originates from (for example, if there are multiple subchunks for one chunk - the subchunks will be grouped together according to their main chunk);
+- `'errors'` - amount of errors in items;
+- `'warnings'` - amount of warnings in items;
+- `'failed'` - whether the item has failed compilation;
+- `'cacheable'` - whether the item is cacheable;
+- `'built'` - whether the asset has been built;
+- `'prefetched'` - whether the asset will be prefetched;
+- `'optional'` - whether the asset is optional;
+- `'identifier'` - identifier of the item;
+- `'index'` - item's processing index;
+- `'index2'`
+- `'profile'`
+- `'issuer'` - an identifier of the issuer;
+- `'issuerId'` - an id of the issuer;
+- `'issuerName'` - a name of the issuer;
+- `'issuerPath'` - a full issuer object. There's no real need to sort by this field;
+
+### Extending stats behaviours
+
+If you want to use one of the pre-defined behaviours e.g. `'minimal'` but still override one or more of the rules: specify the desired `stats.preset` and add the customized or additional rules afterwards.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //..
+  stats: {
+    preset: 'minimal',
+    moduleTrace: true,
+    errorDetails: true
+  }
 };
 ```

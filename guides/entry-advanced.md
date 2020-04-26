@@ -35,7 +35,7 @@ __account.scss__
 // account page individual styles
 ```
 
-We will use [MiniCssExtractPlugin](/plugins/mini-css-extract-plugin/) in `production` mode for css as a best practice.
+We will use [`MiniCssExtractPlugin`](/plugins/mini-css-extract-plugin/) in `production` mode for css as a best practice.
 
 __webpack.config.js__
 
@@ -46,7 +46,7 @@ module.exports = {
   mode: process.env.NODE_ENV,
   entry: {
     home: ['./home.js', './home.scss'],
-    account: ['./account.js', './account.scss']
+    account: ['./account.js', './account.scss'],
   },
   output: {
     filename: '[name].js',
@@ -59,20 +59,20 @@ module.exports = {
           // fallback to style-loader in development
           process.env.NODE_ENV !== 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
           'css-loader',
-          'sass-loader'
-        ]
-      }
-    ]
+          'sass-loader',
+        ],
+      },
+    ],
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: '[name].css'
+      filename: '[name].css',
     }),
-  ]
+  ],
 };
 ```
 
-Running webpack with above config will output into `./dist` as we did not specify different output path. `./dist` directory will now contain four files:
+Running webpack with above configuration will output into `./dist` as we did not specify different output path. `./dist` directory will now contain four files:
 
 - home.js
 - home.css

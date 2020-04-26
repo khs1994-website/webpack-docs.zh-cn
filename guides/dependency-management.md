@@ -1,5 +1,5 @@
 ---
-title: 管理依赖
+title: Dependency Management
 sort: 12
 contributors:
   - ndelangen
@@ -16,17 +16,30 @@ contributors:
 > amd
 
 
-## 带表达式的 require 语句
+## require with expression
 
-如果你的 request 含有表达式(expressions)，就会创建一个上下文(context)，因为在编译时(compile time)并不清楚__具体__导入哪个模块。
+A context is created if your request contains expressions, so the __exact__ module is not known on compile time.
 
-示例：
+Example, given we have the following folder structure including `.ejs` files:
+
+```bash
+example_directory
+│
+└───template
+│   │   table.ejs
+│   │   table-row.ejs
+│   │
+│   └───directory
+│       │   another.ejs
+```
+
+When following `require()` call is evaluated:
 
 ```javascript
 require('./template/' + name + '.ejs');
 ```
 
-webpack 解析 `require()` 调用，然后提取出如下一些信息：
+webpack parses the `require()` call and extracts some information:
 
 ```code
 Directory: ./template
@@ -35,63 +48,63 @@ Regular expression: /^.*\.ejs$/
 
 __context module__
 
-会生成一个 context module(上下文模块)。它包含__目录下的所有模块__的引用，如果一个 request 符合正则表达式，就能 require 进来。此 context module 包含一个 map 对象，会把 requests 翻译成对应的模块 id。（译者注：request 参考 [概念术语](https://webpack.docschina.org/glossary/) 文档）
+A context module is generated. It contains references to __all modules in that directory__ that can be required with a request matching the regular expression. The context module contains a map which translates requests to module ids.
 
-示例：
+Example map:
 
 ```json
 {
   "./table.ejs": 42,
   "./table-row.ejs": 43,
-  "./directory/folder.ejs": 44
+  "./directory/another.ejs": 44
 }
 ```
 
-此 context module 还包含一些访问这个 map 对象的 runtime 逻辑。
+The context module also contains some runtime logic to access the map.
 
-这意味着 webpack 能够支持动态地 require，但会导致所有可能用到的模块都包含在 bundle 中。
+This means dynamic requires are supported but will cause all matching modules to be included in the bundle.
 
 
 ## `require.context`
 
-你还可以通过 `require.context()` 函数来创建自己的 context。
+You can create your own context with the `require.context()` function.
 
-可以给这个函数传入三个参数：一个要搜索的目录，一个标记表示是否还搜索其子目录，
-以及一个匹配文件的正则表达式。
+It allows you to pass in a directory to search, a flag indicating whether subdirectories should be searched
+too, and a regular expression to match files against.
 
-webpack 会在构建中解析代码中的 `require.context()` 。
+webpack parses for `require.context()` in the code while building.
 
-语法如下：
+The syntax is as follows:
 
 ```javascript
-require.context(directory, useSubdirectories = false, regExp = /^\.\//);
+require.context(directory, useSubdirectories = true, regExp = /^\.\/.*$/, mode = 'sync');
 ```
 
-示例：
+Examples:
 
 ```javascript
 require.context('./test', false, /\.test\.js$/);
-// （创建出）一个 context，其中文件来自 test 目录，request 以 `.test.js` 结尾。
+// a context with files from the test directory that can be required with a request endings with `.test.js`.
 ```
 
 ```javascript
 require.context('../', true, /\.stories\.js$/);
-// （创建出）一个 context，其中所有文件都来自父文件夹及其所有子级文件夹，request 以 `.stories.js` 结尾。
+// a context with all files in the parent folder and descending folders ending with `.stories.js`.
 ```
 
-W> 传递给 `require.context` 的参数必须是字面量(literal)！
+W> The arguments passed to `require.context` must be literals!
 
 
 ### context module API
 
-一个 context module 会导出一个（require）函数，此函数可以接收一个参数：request。
+A context module exports a (require) function that takes one argument: the request.
 
-此导出函数有三个属性：`resolve`, `keys`, `id`。
+The exported function has 3 properties: `resolve`, `keys`, `id`.
 
-- `resolve` 是一个函数，它返回 request 被解析后得到的模块 id。
-- `keys` 也是一个函数，它返回一个数组，由所有可能被此 context module 处理的请求（译者注：参考下面第二段代码中的 key）组成。
+- `resolve` is a function and returns the module id of the parsed request.
+- `keys` is a function that returns an array of all possible requests that the context module can handle.
 
-如果想引入一个文件夹下面的所有文件，或者引入能匹配一个正则表达式的所有文件，这个功能就会很有帮助，例如：
+This can be useful if you want to require all files in a directory or matching a pattern, Example:
 
 ```javascript
 function importAll (r) {
@@ -109,7 +122,7 @@ function importAll (r) {
 }
 
 importAll(require.context('../components/', true, /\.js$/));
-// 在构建时(build-time)，所有被 require 的模块都会被填充到 cache 对象中。
+// At build-time cache will be populated with all required modules.
 ```
 
-- `id` 是 context module 的模块 id. 它可能在你使用 `module.hot.accept` 时会用到。
+- `id` is the module id of the context module. This may be useful for `module.hot.accept`.

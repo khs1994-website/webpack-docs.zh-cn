@@ -1,5 +1,5 @@
 ---
-title: 对比
+title: Comparison
 sort: 1
 contributors:
   - pksjce
@@ -15,46 +15,46 @@ related:
     url: https://engineering.velocityapp.com/webpack-vs-browersify-vs-systemjs-for-spas-95b349a41fa0
 ---
 
-webpack 不仅仅作为模块打包器存在。如果你要在使用 webpack 或下面任意的打包器之间进行选择，这里列出了 webpack 特性，以及和其他竞品之间的功能对比。
+webpack is not the only module bundler out there. If you are choosing between using webpack or any of the bundlers below, here is a feature-by-feature comparison on how webpack fares against the current competition.
 
-| 特性 | webpack/webpack | jrburke/requirejs | substack/node-browserify | jspm/jspm-cli | rollup/rollup | brunch/brunch |
+| Feature | webpack/webpack | jrburke/requirejs | substack/node-browserify | jspm/jspm-cli | rollup/rollup | brunch/brunch |
 |---------|-----------------|-------------------|--------------------------|---------------|---------------|---------------|
-| 附加模块按需加载 | __yes__ | __yes__ | no | [System.import](https://github.com/systemjs/systemjs/blob/master/docs/system-api.md#systemimportmodulename--normalizedparentname---promisemodule) | no | no |
+| Additional chunks are loaded on demand | __yes__ | __yes__ | no | [System.import](https://github.com/systemjs/systemjs/blob/master/docs/system-api.md#systemimportmodulename--normalizedparentname---promisemodule) | no | no |
 | AMD `define` | __yes__ | __yes__ | [deamdify](https://github.com/jaredhanson/deamdify) | yes | [rollup-plugin-amd](https://github.com/piuccio/rollup-plugin-amd) | yes |
 | AMD `require` | __yes__ | __yes__ | no | yes | no | yes |
-| AMD `require` 按需加载 | __yes__ | 手动配置 | no | yes | no | no |
-| CommonJS `exports` | __yes__ | 只包含在 `define` 中 | __yes__ | yes | [commonjs-plugin](https://github.com/rollup/rollup-plugin-commonjs) | yes |
-| CommonJS `require` | __yes__ | 只包含在 `define` 中 | __yes__ | yes | [commonjs-plugin](https://github.com/rollup/rollup-plugin-commonjs) | yes |
+| AMD `require` loads on demand | __yes__ | with manual configuration | no | yes | no | no |
+| CommonJS `exports` | __yes__ | only wrapping in `define` | __yes__ | yes | [commonjs-plugin](https://github.com/rollup/rollup-plugin-commonjs) | yes |
+| CommonJS `require` | __yes__ | only wrapping in `define` | __yes__ | yes | [commonjs-plugin](https://github.com/rollup/rollup-plugin-commonjs) | yes |
 | CommonJS `require.resolve` | __yes__ | no | no | no | no | |
-| require 中拼接 `require("./fi" + "le")` | __yes__ | no♦ | no | no | no | |
-| 调试支持 | __SourceUrl, SourceMaps__ | 不需要 | SourceMaps | __SourceUrl, SourceMaps__ | __SourceUrl, SourceMaps__ | SourceMaps |
-| 依赖 | 19MB / 127 个程序包 | 11MB / 118 个程序包 | __1.2MB / 1 个程序包__ | 26MB / 131 个程序包 | ?MB / 3 个程序包 | |
-| ES2015 `import`/`export` | __yes__ (webpack 2) | no | no | __yes__ | __yes__ | yes, 通过 [es6 模块转换器](https://github.com/gcollazo/es6-module-transpiler-brunch)
-| require (guided) 中的表达式 `require("./templates/" + template)` | __yes (包括所有匹配的文件)__ | no♦ | no | no | no | no |
-| require (free) 中的表达式 `require(moduleName)` | 手动配置 | no♦ | no | no | no | |
-| 生成单独包 | __yes__ | yes♦ | yes | yes | yes | yes |
-| 间接的 require `var r = require; r("./file")` | __yes__ | no♦ | no | no | no | |
-| 分别加载每个文件 | no | yes | no | yes | no | no |
-| 损坏的路径名 | __yes__ | no | 部分 | yes | 不需要（路径名称不在包中） | no |
-| 压缩 | terser | uglify, closure compiler | [uglifyify](https://github.com/hughsk/uglifyify) | yes | [uglify-plugin](https://github.com/TrySound/rollup-plugin-uglify) | [UglifyJS-brunch](https://github.com/brunch/uglify-js-brunch)
-| 用 common bundle 构建多页 | 手动配置 | __yes__ | 手动配置 | 使用包算法 | no | no|
-| 多个 bundle | __yes__ | 手动配置 | 手动配置 | yes | no | yes |
-| Node.js 内置 libs `require("path")` | __yes__ | no | __yes__ | __yes__ | [node-resolve-plugin](https://github.com/rollup/rollup-plugin-node-resolve) | |
-| Node.js 其他 | process, __dir/filename, global | - | process, __dir/filename, global | process, __dir/filename, global for cjs | global ([commonjs-plugin](https://github.com/rollup/rollup-plugin-commonjs)) | |
-| 插件 | __yes__ | yes | __yes__ | yes | yes | yes |
-| 预处理 | __loaders, [transforms](https://github.com/webpack-contrib/transform-loader)__ | loaders | transforms | plugin translate | plugin transforms | compilers, optimizers |
-| 浏览器替换 | `web_modules`, `.web.js`, package.json field, alias config option | alias option | package.json field, alias option | package.json, alias option | no | |
-| 可 require 文件 | 文件系统 | __web__ | 文件系统 | 通过插件 | 文件系统或通过插件 | 文件系统 |
-| 执行时(runtime)开销 | __243B + 20B 每个模块 + 4B 每个依赖__ | 14.7kB + 0B 每个模块 + (3B + X) 每个依赖 | 415B + 25B 每个模块 + (6B + 2X) 每个依赖 | 5.5kB for 自执行 bundle, 38kB 全部 loader 和 polyfill, 0 普通模块, 293B CJS, 139B ES2015 System.register before gzip | __none for ES2015 modules__（可能有其他格式） | |
-| 开发文件监听(watch)模式 | yes | 不需要 | [watchify](https://github.com/browserify/watchify) | 开发不需要 | [rollup-watch](https://github.com/rollup/rollup-watch) | yes |
+| Concat in require `require("./fi" + "le")` | __yes__ | no♦ | no | no | no | |
+| Debugging support | __SourceUrl, SourceMaps__ | not required | SourceMaps | __SourceUrl, SourceMaps__ | __SourceUrl, SourceMaps__ | SourceMaps |
+| Dependencies | 19MB / 127 packages | 11MB / 118 packages | __1.2MB / 1 package__ | 26MB / 131 packages | ?MB / 3 packages | |
+| ES2015 `import`/`export` | __yes__ (webpack 2) | no | no | __yes__ | __yes__ | yes, via [es6 module transpiler](https://github.com/gcollazo/es6-module-transpiler-brunch)
+| Expressions in require (guided) `require("./templates/" + template)` | __yes (all files matching included)__ | no♦ | no | no | no | no |
+| Expressions in require (free) `require(moduleName)` | with manual configuration | no♦ | no | no | no | |
+| Generate a single bundle | __yes__ | yes♦ | yes | yes | yes | yes |
+| Indirect require `var r = require; r("./file")` | __yes__ | no♦ | no | no | no | |
+| Load each file separate | no | yes | no | yes | no | no |
+| Mangle path names | __yes__ | no | partial | yes | not required (path names are not included in the bundle) | no |
+| Minimizing | [Terser](https://github.com/fabiosantoscode/terser) | uglify, closure compiler | [uglifyify](https://github.com/hughsk/uglifyify) | yes | [uglify-plugin](https://github.com/TrySound/rollup-plugin-uglify) | [UglifyJS-brunch](https://github.com/brunch/uglify-js-brunch)
+| Multi pages build with common bundle | with manual configuration | __yes__ | with manual configuration | with bundle arithmetic | no | no|
+| Multiple bundles | __yes__ | with manual configuration | with manual configuration | yes | no | yes |
+| Node.js built-in libs `require("path")` | __yes__ | no | __yes__ | __yes__ | [node-resolve-plugin](https://github.com/rollup/rollup-plugin-node-resolve) | |
+| Other Node.js stuff | process, __dir/filename, global | - | process, __dir/filename, global | process, __dir/filename, global for cjs | global ([commonjs-plugin](https://github.com/rollup/rollup-plugin-commonjs)) | |
+| Plugins | __yes__ | yes | __yes__ | yes | yes | yes |
+| Preprocessing | __loaders, [transforms](https://github.com/webpack-contrib/transform-loader)__ | loaders | transforms | plugin translate | plugin transforms | compilers, optimizers |
+| Replacement for browser | `web_modules`, `.web.js`, package.json field, alias configuration option | alias option | package.json field, alias option | package.json, alias option | no | |
+| Requirable files | file system | __web__ | file system | through plugins | file system or through plugins | file system |
+| Runtime overhead | __243B + 20B per module + 4B per dependency__ | 14.7kB + 0B per module + (3B + X) per dependency | 415B + 25B per module + (6B + 2X) per dependency | 5.5kB for self-executing bundles, 38kB for full loader and polyfill, 0 plain modules, 293B CJS, 139B ES2015 System.register before gzip | __none for ES2015 modules__ (other formats may have) | |
+| Watch mode | yes | not required | [watchify](https://github.com/browserify/watchify) | not needed in dev | [rollup-watch](https://github.com/rollup/rollup-watch) | yes |
 
-♦ 在 production mode（在 development mode 中相反）
+♦ in production mode (opposite in development mode)
 
-X 是路径字符串的长度
+X is the length of the path string
 
 
-## 打包 vs. 加载
+## Bundling vs. Loading
 
-注意_加载_和_打包_模块之间的一些关键区别很重要。可以在 [JSPM](https://github.com/jspm/jspm-cli) 引擎下找到像 [SystemJS](https://github.com/systemjs/systemjs) 的工具，用于在浏览器通过运行时(runtime)来加载和转译模块。这和 webpack 有着显著不同，在加载到浏览器之前，模块就已经被转译（通过 "loaders"）并打包在一起。
+It's important to note some key differences between _loading_ and _bundling_ modules. A tool like [SystemJS](https://github.com/systemjs/systemjs), which can be found under the hood of [JSPM](https://github.com/jspm/jspm-cli), is used to load and transpile modules at runtime in the browser. This differs significantly from webpack, where modules are transpiled (through "loaders") and bundled before hitting the browser.
 
-每种方法都有其优势和劣势。运行时(runtime)加载和转译模块，为大型网站增加了大量开销，并且应用程序会由许多模块组成。因此，SystemJS 对于需要少量模块的小型项目更有意义。但是，随着 [HTTP/2](https://http2.github.io/) 改善文件从服务器到客户端的传输速度，这可能会发生一些变化。请注意，HTTP/2 不会修改_转译_模块的任何内容，在客户端下载完成后，还是需要很长时间去进行转译。
+Each method has its advantages and disadvantages. Loading and transpiling modules at runtime can add a lot of overhead for larger sites and applications comprised of many modules. For this reason, SystemJS makes more sense for smaller projects where fewer modules are required. However, this may change a bit as [HTTP/2](https://http2.github.io/) will improve the speed at which files can be transferred from server to client. Note that HTTP/2 doesn't change anything about _transpiling_ modules, which will always take longer when done client-side.

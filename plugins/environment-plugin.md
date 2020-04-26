@@ -7,17 +7,17 @@ contributors:
   - byzyk
 ---
 
-`EnvironmentPlugin` 是一个通过 [`DefinePlugin`](/plugins/define-plugin) 来设置 [`process.env`](https://nodejs.org/api/process.html#process_process_env) 环境变量的快捷方式。
+The `EnvironmentPlugin` is shorthand for using the [`DefinePlugin`](/plugins/define-plugin) on [`process.env`](https://nodejs.org/api/process.html#process_process_env) keys.
 
-## 用法
+## Usage
 
-`EnvironmentPlugin` 可以接收键数组或将键映射到其默认值的对象。（译者注：键是指要设定的环境变量名）
+The `EnvironmentPlugin` accepts either an array of keys or an object mapping its keys to their default values.
 
 ```javascript
 new webpack.EnvironmentPlugin(['NODE_ENV', 'DEBUG']);
 ```
 
-上面的写法和下面这样使用 `DefinePlugin` 的效果相同：
+This is equivalent to the following `DefinePlugin` application:
 
 ```javascript
 new webpack.DefinePlugin({
@@ -26,28 +26,30 @@ new webpack.DefinePlugin({
 });
 ```
 
-T> 使用不存在的环境变量会导致一个 "`EnvironmentPlugin` - `${key}` environment variable is undefined" 错误。
+T> Not specifying the environment variable raises an "`EnvironmentPlugin` - `${key}` environment variable is undefined" error.
 
-## 带默认值使用
+## Usage with default values
 
-或者，`EnvironmentPlugin` 也可以接收一个指定相应默认值的对象，如果在 `process.env` 中对应的环境变量不存在时将使用指定的默认值。
+Alternatively, the `EnvironmentPlugin` supports an object, which maps keys to their default values. The default value for a key is taken if the key is undefined in `process.env`.
 
-```js
+```javascript
 new webpack.EnvironmentPlugin({
-  NODE_ENV: 'development', // 除非有定义 process.env.NODE_ENV，否则就使用 'development'
+  NODE_ENV: 'development', // use 'development' unless process.env.NODE_ENV is defined
   DEBUG: false
 });
 ```
 
-W> 从 `process.env` 中取到的值类型均为字符串。
+W> Variables coming from `process.env` are always strings.
 
-T> 不同于 [`DefinePlugin`](/plugins/define-plugin)，默认值将被 `EnvironmentPlugin` 执行 `JSON.stringify`。
+T> Unlike [`DefinePlugin`](/plugins/define-plugin), default values are applied to `JSON.stringify` by the `EnvironmentPlugin`.
 
-T> 如果要指定一个未设定的默认值，使用 `null` 来代替 `undefined`。
+T> To specify an unset default value, use `null` instead of `undefined`.
 
-__示例：__
+W> If an environment variable is not found during bundling and no default value was provided, webpack will throw an error instead of a warning.
 
-让我们看一下对下面这个用来试验的文件 `entry.js` 执行前面配置的 `EnvironmentPlugin` 的结果：
+__Example:__
+
+Let's investigate the result when running the previous `EnvironmentPlugin` configuration on a test file `entry.js`:
 
 ```javascript
 if (process.env.NODE_ENV === 'production') {
@@ -58,24 +60,24 @@ if (process.env.DEBUG) {
 }
 ```
 
-当在终端执行 `NODE_ENV=production webpack` 来构建时，`entry.js` 变成了这样：
+When executing `NODE_ENV=production webpack` in the terminal to build, `entry.js` becomes this:
 
 ```javascript
-if ('production' === 'production') { // <-- NODE_ENV 的 'production' 被带过来了
+if ('production' === 'production') { // <-- 'production' from NODE_ENV is taken
   console.log('Welcome to production');
 }
-if (false) { // <-- 使用了默认值
+if (false) { // <-- default value is taken
   console.log('Debugging output');
 }
 ```
 
-执行 `DEBUG=false webpack` 则会生成：
+Running `DEBUG=false webpack` yields:
 
 ```javascript
-if ('development' === 'production') { // <-- 使用了默认值
+if ('development' === 'production') { // <-- default value is taken
   console.log('Welcome to production');
 }
-if ('false') { // <-- DEBUG 的 'false' 被带过来了
+if ('false') { // <-- 'false' from DEBUG is taken
   console.log('Debugging output');
 }
 ```

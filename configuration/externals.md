@@ -1,6 +1,6 @@
 ---
-title: 外部扩展(externals)
-sort: 13
+title: Externals
+sort: 15
 contributors:
   - sokra
   - skipjack
@@ -8,20 +8,23 @@ contributors:
   - fadysamirsadek
   - byzyk
   - zefman
+  - Mistyyyy
+  - jamesgeorge007
+  - tanhauhau
+  - snitin315
+  - beejunk
 ---
 
-`externals` 配置选项提供了「从输出的 bundle 中排除依赖」的方法。相反，所创建的 bundle 依赖于那些存在于用户环境(consumer's environment)中的依赖。此功能通常对 __library 开发人员__来说是最有用的，然而也会有各种各样的应用程序用到它。
-
-T> __用户(consumer)__，在这里是指，引用了「使用 webpack 打包的 library」的所有终端用户的应用程序(end user application)。
+The `externals` configuration option provides a way of excluding dependencies from the output bundles. Instead, the created bundle relies on that dependency to be present in the consumer's (any end-user application) environment. This feature is typically most useful to __library developers__, however there are a variety of applications for it.
 
 
 ## `externals`
 
-`string` `object` `function`  `regex`
+`string` `[string]` `object` `function`  `RegExp`
 
-__防止__将某些 `import` 的包(package)__打包__到 bundle 中，而是在运行时(runtime)再去从外部获取这些_扩展依赖(external dependencies)_。
+__Prevent bundling__ of certain `import`ed packages and instead retrieve these _external dependencies_ at runtime.
 
-例如，从 CDN 引入 [jQuery](https://jquery.com/)，而不是把它打包：
+For example, to include [jQuery](https://jquery.com/) from a CDN instead of bundling it:
 
 __index.html__
 
@@ -44,7 +47,7 @@ module.exports = {
 };
 ```
 
-这样就剥离了那些不需要改动的依赖模块，换句话，下面展示的代码还可以正常运行：
+This leaves any dependent modules unchanged, i.e. the code shown below will still work:
 
 ```javascript
 import $ from 'jquery';
@@ -52,22 +55,46 @@ import $ from 'jquery';
 $('.my-element').animate(/* ... */);
 ```
 
-具有外部依赖(external dependency)的 bundle 可以在各种模块上下文(module context)中使用，例如 [CommonJS, AMD, 全局变量和 ES2015 模块](/concepts/modules)。外部 library 可能是以下任何一种形式：
+The bundle with external dependencies can be used in various module contexts, such as [CommonJS, AMD, global and ES2015 modules](/concepts/modules). The external library may be available in any of these forms:
 
-- __root__：可以通过一个全局变量访问 library（例如，通过 script 标签）。
-- __commonjs__：可以将 library 作为一个 CommonJS 模块访问。
-- __commonjs2__：和上面的类似，但导出的是 `module.exports.default`.
-- __amd__：类似于 `commonjs`，但使用 AMD 模块系统。
+- __root__: The library should be available as a global variable (e.g. via a script tag).
+- __commonjs__: The library should be available as a CommonJS module.
+- __commonjs2__: Similar to the above but where the export is `module.exports.default`.
+- __amd__: Similar to `commonjs` but using AMD module system.
 
-可以接受各种语法……
+The following syntaxes are accepted...
 
 
 ### string
 
-请查看上面的例子。属性名称是 `jquery`，表示应该排除 `import $ from 'jquery'` 中的 `jquery` 模块。为了替换这个模块，`jQuery` 的值将被用来检索一个全局的 `jQuery` 变量。换句话说，当设置为一个字符串时，它将被视为`全局的`（定义在上面和下面）。
+See the example above. The property name `jquery` indicates that the module `jquery` in `import $ from 'jquery'` should be excluded. In order to replace this module, the value `jQuery` will be used to retrieve a global `jQuery` variable. In other words, when a string is provided it will be treated as `root` (defined above and below).
 
+On the other hand, if you want to externalise a library that is available as a CommonJS module, you can provide the external library type together with the library name.
 
-### array
+For example, if you want to exclude `fs-extra` from the output bundle and import it during the runtime instead, you can specify it as follows:
+
+```javascript
+module.exports = {
+  // ...
+  externals: {
+    'fs-extra': 'commonjs2 fs-extra',
+  }
+};
+```
+
+This leaves any dependent modules unchanged, i.e. the code shown below:
+
+```javascript
+import fs from 'fs-extra';
+```
+
+will compile to something like:
+
+```javascript
+const fs = require('fs-extra');
+```
+
+### [string]
 
 ```javascript
 module.exports = {
@@ -78,12 +105,11 @@ module.exports = {
 };
 ```
 
-`subtract: ['./math', 'subtract']` 转换为父子结构，其中 `./math` 是父模块，而 bundle 只引用 `subtract` 变量下的子集。
-
+`subtract: ['./math', 'subtract']` allows you select part of a commonjs module, where `./math` is the module and your bundle only requires the subset under the `subtract` variable. This example would translate to `require('./math').subtract;`
 
 ### object
 
-W> An object with `{ root, amd, commonjs, ... }` is only allowed for [`libraryTarget: 'umd'`](/configuration/output/#output-librarytarget). It's not allowed for other library targets.
+W> An object with `{ root, amd, commonjs, ... }` is only allowed for [`libraryTarget: 'umd'`](/configuration/output/#outputlibrarytarget). It's not allowed for other library targets.
 
 ```javascript
 module.exports = {
@@ -92,17 +118,17 @@ module.exports = {
     react: 'react'
   },
 
-  // 或者
+  // or
 
   externals : {
     lodash : {
       commonjs: 'lodash',
       amd: 'lodash',
-      root: '_' // 指向全局变量
+      root: '_' // indicates global variable
     }
   },
 
-  // 或者
+  // or
 
   externals : {
     subtract : {
@@ -112,14 +138,30 @@ module.exports = {
 };
 ```
 
-此语法用于描述外部 library 所有可用的访问方式。这里 `lodash` 这个外部 library 可以在 AMD 和 CommonJS 模块系统中通过 `lodash` 访问，但在全局变量形式下用 `_` 访问。`subtract` 可以通过全局 `math` 对象下的属性 `subtract` 访问（例如 `window['math']['subtract']`）。
+This syntax is used to describe all the possible ways that an external library can be made available. `lodash` here is available as `lodash` under AMD and CommonJS module systems but available as `_` in a global variable form. `subtract` here is available via the property `subtract` under the global `math` object (e.g. `window['math']['subtract']`).
 
 
 ### function
 
-对于 webpack 外部化，通过定义函数来控制行为，可能会很有帮助。例如，[webpack-node-externals](https://www.npmjs.com/package/webpack-node-externals) 能够排除 `node_modules` 目录中所有模块，还提供一些选项，比如白名单 package(whitelist package)。
+`function (context, request, callback)`
 
-基本配置如下：
+It might be useful to define your own function to control the behavior of what you want to externalize from webpack. [webpack-node-externals](https://www.npmjs.com/package/webpack-node-externals), for example, excludes all modules from the `node_modules` directory and provides options to whitelist packages.
+
+The function receives three arguments:
+
+- `context` (`string`): The directory of the file which contains the import.
+- `request` (`string`): The import path being requested.
+- `callback` (`function (err, result, type)`): Callback function used to indicate how the module should be externalized.
+
+The callback function takes three arguments:
+
+- `err` (`Error`): Used to indicate if there has been an error while externalizing the import. If there is an error, this should be the only parameter used.
+- `result` (`string` `[string]` `object`): Describes the external module. Can accept a string in the format `${type} ${path}`, or one of the other standard external formats ([`string`](#string), [`[string]`](#string-1), or [`object`](#object))
+- `type` (`string`): Optional parameter that indicates the module type (if it has not already been indicated in the `result` parameter).
+
+As an example, to externalize all imports where the import path matches a regular expression you could do the following:
+
+__webpack.config.js__
 
 ```javascript
 module.exports = {
@@ -127,20 +169,79 @@ module.exports = {
   externals: [
     function(context, request, callback) {
       if (/^yourregex$/.test(request)){
+        // Externalize to a commonjs module using the request path 
         return callback(null, 'commonjs ' + request);
       }
+
+      // Continue without externalizing the import
       callback();
     }
   ]
 };
 ```
 
-`'commonjs'+ request` 定义了需要外部化的模块类型。
+Other examples using different module formats:
 
+__webpack.config.js__
 
-### regex
+```javascript
+module.exports = {
+  externals: [
+    function(context, request, callback) {
+      // The external is a `commonjs2` module located in `@scope/library`
+      callback(null, '@scope/library', 'commonjs2');
+    }
+  ]
+};
+```
 
-匹配给定正则表达式的每个依赖，都将从输出 bundle 中排除。
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  externals: [
+    function(context, request, callback) {
+      // The external is a global variable called `nameOfGlobal`.
+      callback(null, 'nameOfGlobal');
+    }
+  ]
+};
+```
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  externals: [
+    function(context, request, callback) {
+      // The external is a named export in the `@scope/library` module.
+      callback(null, ['@scope/library', 'namedexport'], 'commonjs');
+    }
+  ]
+};
+```
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  externals: [
+    function(context, request, callback) {
+      // The external is a UMD module
+      callback(null, {
+        root: 'componentsGlobal',
+        commonjs: '@scope/components',
+        commonjs2: '@scope/components',
+        amd: 'components'
+      });
+    }
+  ]
+};
+```
+
+### RegExp
+
+Every dependency that matches the given regular expression will be excluded from the output bundles.
 
 ```javascript
 module.exports = {
@@ -149,7 +250,7 @@ module.exports = {
 };
 ```
 
-这个示例中，所有名为 `jQuery` 的依赖（忽略大小写），或者 `$`，都会被外部化。
+In this case, any dependency named `jQuery`, capitalized or not, or `$` would be externalized.
 
 ### Combining syntaxes
 
@@ -168,7 +269,7 @@ module.exports = {
         amd: 'lodash',
         root: '_' // indicates global variable
       },
-      // Array
+      // [string]
       subtract: ['./math', 'subtract']
     },
     // Function
@@ -184,4 +285,4 @@ module.exports = {
 };
 ```
 
-关于如何使用此 externals 配置的更多信息，请参考[如何编写 library](/guides/author-libraries)。
+For more information on how to use this configuration, please refer to the article on [how to author a library](/guides/author-libraries).

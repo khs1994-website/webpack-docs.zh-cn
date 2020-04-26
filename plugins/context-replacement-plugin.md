@@ -11,12 +11,12 @@ related:
     url: https://github.com/date-fns/date-fns/blob/master/docs/webpack.md
 ---
 
-_上下文(context)_ 与一个 [含有表达式的 require 语句](/guides/dependency-management/#require-with-expression) 相关，例如 `require('./locale/' + name + '.json')`。遇见此类表达式时，webpack 查找目录 (`'./locale/'`) 下符合正则表达式 (`/^.*\.json$/`)的文件。由于 `name` 在编译时(compile time)还是未知的，webpack 会将每个文件都作为模块引入到 bundle 中。
+_Context_ refers to a [require with an expression](/guides/dependency-management/#require-with-expression) such as `require('./locale/' + name + '.json')`. When encountering such an expression, webpack infers the directory (`'./locale/'`) and a regular expression (`/^.*\.json$/`). Since the `name` is not known at compile time, webpack includes every file as module in the bundle.
 
-`上下文替换插件(ContextReplacementPlugin)` 允许你覆盖查找规则，该插件有许多配置方式：
+The `ContextReplacementPlugin` allows you to override the inferred information. There are various ways to configure the plugin:
 
 
-## 用法
+## Usage
 
 <!-- eslint-skip -->
 
@@ -29,9 +29,9 @@ new webpack.ContextReplacementPlugin(
 )
 ```
 
-如果资源（或目录）符合 `resourceRegExp` 正则表达式，插件会替换默认资源为 `newContentResource`，布尔值 `newContentRecursive` 表明是否使用递归查找，`newContextRegExp` 用于筛选新上下文里的资源。如果 `newContentResource` 为相对路径，会相对于前一匹配资源路径去解析。
+If the resource (directory) matches `resourceRegExp`, the plugin replaces the default resource, recursive flag or generated regular expression with `newContentResource`, `newContentRecursive` or `newContextRegExp` respectively. If `newContentResource` is relative, it is resolved relative to the previous resource.
 
-这是一个限制模块使用的小例子：
+Here's a small example to restrict module usage:
 
 ```javascript
 new webpack.ContextReplacementPlugin(
@@ -40,10 +40,10 @@ new webpack.ContextReplacementPlugin(
 );
 ```
 
-限定查找 `moment/locale` 上下文里符合 `/de|fr|hu/` 表达式的文件，因此也只会打包这几种本地化内容（更多详细信息，请查看[这个 issue](https://github.com/moment/moment/issues/2373)）。
+The `moment/locale` context is restricted to files matching `/de|fr|hu/`. Thus only those locales are included (see [this issue](https://github.com/moment/moment/issues/2373) for more information).
 
 
-## 内容回调函数
+## Content Callback
 
 ```javascript
 new webpack.ContextReplacementPlugin(
@@ -52,9 +52,9 @@ new webpack.ContextReplacementPlugin(
 );
 ```
 
-`newContentCallback` 函数的第一形参为[`上下文模块工厂(ContextModuleFactory)`的 `data` 对象](/api/plugins/module-factories/)，你需要覆写该对象的 `request` 属性。
+The `newContentCallback` function is given a [`data` object of the `ContextModuleFactory`](/api/plugins/module-factories/) and is expected to overwrite the `request` attribute of the supplied object.
 
-使用这个回调函数，我们可以动态地将请求重定向到一个新的位置：
+Using this callback we can dynamically redirect requests to a new location:
 
 ```javascript
 new webpack.ContextReplacementPlugin(/^\.\/locale$/, (context) => {
@@ -62,25 +62,25 @@ new webpack.ContextReplacementPlugin(/^\.\/locale$/, (context) => {
 
   Object.assign(context, {
     regExp: /^\.\/\w+/,
-    request: '../../locale' // 相对路径解析
+    request: '../../locale' // resolved relatively
   });
 });
 ```
 
 
-## 其他选项
+## Other Options
 
-`newContentResource` 和 `newContentCreateContextMap` 参数也可用：
+The `newContentResource` and `newContentCreateContextMap` parameters are also available:
 
 ```javascript
 new webpack.ContextReplacementPlugin(
   resourceRegExp: RegExp,
   newContentResource: string,
-  newContentCreateContextMap: object // 将运行时请求(runtime-request)映射到编译时请求(compile-time request)
+  newContentCreateContextMap: object // mapping runtime-request (userRequest) to compile-time-request (request)
 );
 ```
 
-这两个参数可以一起使用，来更加有针对性的重定向请求。 `newContentCreateContextMap` 允许你将运行时的请求，映射为形式为对象的编译请求：
+These two parameters can be used together to redirect requests in a more targeted way. The `newContentCreateContextMap` allows you to map runtime requests to compile requests in the form of an object:
 
 ```javascript
 new ContextReplacementPlugin(/selector/, './folder', {

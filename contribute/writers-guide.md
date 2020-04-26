@@ -1,70 +1,71 @@
 ---
-title: 作者指引
+title: Writer's Guide
 sort: 1
 contributors:
   - pranshuchittora
+  - EugeneHlushko
 ---
 
-以下部分包含编辑(edit)和格式化(format)网站内容的所有必需知识。请确保在开始编辑或添加之前，你已经进行过一些研究。有时候最困难的地方在于，找到内容应该存在的位置和确定它是否存在。
+The following sections contain all you need to know about editing and formatting the content within this site. Make sure to do some research before starting your edits or additions. Sometimes the toughest part is finding where the content should live and determining whether or not it already exists.
 
 
-## 步骤
+## Process
 
-1. 查看相关的引用文件。
-2. 点击`编辑`并展开结构。
-3. 提交 PR 修改。
+1. Check related issue if an article links to one.
+2. Hit `edit` and expand on the structure.
+3. PR changes.
 
 
-## YAML 文件顶部信息
+## YAML Frontmatter
 
-每篇文章顶部的内容部分，都是以 [YAML Frontmatter](https://jekyllrb.com/docs/frontmatter/) 格式书写：
+Each article contains a small section at the top written in [YAML Frontmatter](https://jekyllrb.com/docs/frontmatter/):
 
 ``` yaml
 ---
-title: 我的文章
-group: 我的小节
+title: My Article
+group: My Sub-Section
 sort: 3
 contributors:
-  - [github 用户名]
+  - [github username]
 related:
-  - title: 相关文章的 title
-    url: [相关文章的 url]
+  - title: Title of Related Article
+    url: [url of related article]
 ---
 ```
 
-让我们来逐个分析：
+Let's break these down:
 
-- `title`：文章的名称。
-- `group`: 小节的名称。
-- `sort`：这篇文章在此类（或子类）中的顺序（如果存在同类）。
-- `contributors`：贡献文章的 GitHub 用户列表。
-- `related`：所有相关阅读或有用示例。
+- `title`: The name of the article.
+- `group`: The name of the sub-section
+- `sort`: The order of the article within its section (or) sub-section if it is present.
+- `contributors`: A list of GitHub usernames who have contributed to this article.
+- `related`: Any related reading or useful examples.
 
-请注意，`related` 将在页面底部生成__进一步阅读__部分，并且在下面 `contributors` 会生成__贡献__部分。如果你写了一篇文章，并希望获得认可，请不要犹豫，将你的 GitHub 用户名添加到 `contributors` 列表中。
-
-
-## 文档结构
-
-1. 简介 - 一个或两个段落，以便你了解关于什么和为什么的基本想法。
-2. 概述剩余内容 - 将如何呈现内容。
-3. 主要内容 - 告诉你答应说的话。
-4. 结论 - 告诉你所讲的并重述要点。
+Note that `related` will generate a __Further Reading__ section at the bottom of the page and `contributors` will yield a __Contributors__ section below it. If you edit an article and would like recognition, don't hesitate to add your GitHub username to the `contributors` list.
 
 
-## 排版
+## Article Structure
 
-- webpack 应当总是以小写字母书写。即使在一句话的起始位置也是如此。（[来源](https://github.com/webpack/media#name)）
-- loader 应当用反引号(\`)包裹，并且使用[串联式(kebab-cased)](https://en.wikipedia.org/w/index.php?title=Kebab_case)：`css-loader`, `ts-loader`, ……
-- plugin 应当用反引号(\`)包裹，并且使用[驼峰式(camel-cased)](https://en.wikipedia.org/w/index.php?title=Camel_case)：`BannerPlugin`, `NpmInstallWebpackPlugin`, ……
-- 使用 "webpack 2" 指代特定的 webpack 版本（~~"webpack v2"~~）
-- 使用 ES5; ES2015, ES2016, …… 指代 ECMAScript 标准（~~ES6~~, ~~ES7~~）
+1. Brief Introduction - a paragraph or two so you get the basic idea about the what and why.
+2. Outline Remaining Content – how the content will be presented.
+3. Main Content - tell what you promised to tell.
+4. Conclusion - tell what you told and recap the main points.
 
 
-## 格式化
+## Typesetting
 
-### 代码
+- webpack should always be written in lower-case letters. Even at the beginning of a sentence. ([source](https://github.com/webpack/media#name))
+- loaders are enclosed in backticks and [kebab-cased](https://en.wikipedia.org/w/index.php?title=Kebab_case): `css-loader`, `ts-loader`, …
+- plugins are enclosed in backticks and [camel-cased](https://en.wikipedia.org/wiki/Camel_case): `BannerPlugin`, `NpmInstallWebpackPlugin`, …
+- Use "webpack 2" to refer to a specific webpack version (~~"webpack v2"~~)
+- Use ES5; ES2015, ES2016, … to refer to the ECMAScript standards (~~ES6~~, ~~ES7~~)
 
-__语法：\`\`\`javascript … \`\`\`__
+
+## Formatting
+
+### Code
+
+__Syntax: \`\`\`javascript … \`\`\`__
 
 ```javascript
 function foo () {
@@ -96,53 +97,53 @@ __incorrect__
 Set value to `"index.md"`...
 
 
-### 列表
+### Lists
 
 - Boo
 - Foo
 - Zoo
 
-列表，应该按字母表顺序排列。
+Lists should be ordered alphabetically.
 
-### 表格
+### Tables
 
-参数   | 解释说明                                      | 输入类型 | 默认值
+Parameter   | Explanation                                      | Input Type | Default Value
 ----------- | ------------------------------------------------ | ---------- |--------------
 --debug     | Switch loaders to debug mode                     | boolean    | false
 --devtool   | Define source map type for the bundled resources | string     | -
 --progress  | Print compilation progress in percentage         | boolean    | false
 
-列表应该按照字母顺序排序。
+Tables should also be ordered alphabetically.
 
-### 配置属性
+### Configuration Properties
 
-[配置](/configuration) 属性，应该按字母表顺序排列:
+The [configuration](/configuration) properties should be ordered alphabetically as well:
 
 - `devServer.compress`
 - `devServer.contentBase`
 - `devServer.hot`
 
-### 引用
+### Quotes
 
-#### 引用块
+#### Blockquote
 
-__语法：\>__
+__Syntax: \>__
 
-> 这是一个引用块.
+> This is a blockquote.
 
-#### 提示
+#### Tip
 
-__语法：T\>__
+__Syntax: T\>__
 
-T> 这是一个提示.
+T> This is a tip.
 
-__语法：W\>__
+__Syntax: W\>__
 
-W> 这是一个警告.
+W> This is a warning.
 
-__语法：?\>__
+__Syntax: ?\>__
 
-?> 这个一个 todo 待办项.
+?> This is a todo.
 
 ### Assumptions and simplicity
 
@@ -159,3 +160,70 @@ Please do not assume things are simple. Avoid words like 'just', 'simply'.
 - Simply run command...
 + Run the `command-name` command...
 ```
+
+### Configuration defaults and types
+
+Always provide types and defaults to all of the documentation options in order to keep the documentation accessible and well-written. We are adding types and defaults after entitling the documented option:
+
+__configuration.example.option__
+
+`string = 'none'`
+
+Where `= 'none'` means that the default value is `'none'` for the given option.
+
+`string = 'none': 'none' | 'development' | 'production'`
+
+Where `: 'none' | 'development' | 'production'` enumerates the possible type values, in this case, three strings are acceptable: `'none'`, `'development'`, and `'production'`.
+
+Use space between types to list all available types for the given option:
+
+`string = 'none': 'none' | 'development' | 'production'` `boolean`
+
+To mark an array, use square brackets:
+
+`string` `[string]`
+
+If multiple types are allowed in `array`, use comma:
+
+`string` `[string, RegExp, function(arg) => string]`
+
+To mark a function, also list arguments when they are available:
+
+`function (compilation, module, path) => boolean`
+
+Where `(compilation, module, path)` lists the arguments that the provided function will receive and `=> boolean` means that the return value of the function must be a `boolean`.
+
+To mark a Plugin as an available option value type, use the camel case title of the `Plugin`:
+
+`TerserPlugin` `[TerserPlugin]`
+
+Which means that the option expects one or few `TerserPlugin` instances.
+
+To mark a number, use `number`:
+
+`number = 15: 5, 15, 30`
+
+To mark an object, use `object`:
+
+`object = { prop1 string = 'none': 'none' | 'development' | 'production', prop2 boolean = false, prop3 function (module) => string }`
+
+When object's key can have multiple types, use `|` to list them. Here is an example, where `prop1` can be both a string and an array of strings:
+
+`object = { prop1 string = 'none': 'none' | 'development' | 'production' | [string]}`
+
+This allows us to display the defaults, enumeration and other information.
+
+If the object's key is dynamic, user-defined, use `<key>` to describe it:
+
+`object = { <key> string }`
+
+### Options shortlists and their typing
+
+Sometimes, we want to describe certain properties of objects and functions in lists. When applicable add typing directly to the list where properties are enlisted:
+
+- `madeUp` (`boolean = true`): short description
+- `shortText` (`string = 'i am text'`): another short description
+
+W> `:` is not a necessity here, note the property, type and default.
+
+An example can be found on the [`options` section of the EvalSourceMapDevToolPlugin's page](/plugins/eval-source-map-dev-tool-plugin/#options).

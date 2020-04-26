@@ -1,5 +1,5 @@
 ---
-title: 使用不同语言进行配置(configuration languages)
+title: Configuration Languages
 sort: 2
 contributors:
   - sokra
@@ -9,14 +9,15 @@ contributors:
   - peterblazejewicz
   - youta1119
   - byzyk
+  - Nek-
 ---
 
-webpack 接受以多种编程和数据语言编写的配置文件。支持的文件扩展名列表，可以在 [node-interpret](https://github.com/gulpjs/interpret) 包中找到。使用 [node-interpret](https://github.com/gulpjs/interpret)，webpack 可以处理许多不同类型的配置文件。
+webpack accepts configuration files written in multiple programming and data languages. The list of supported file extensions can be found at the [node-interpret](https://github.com/gulpjs/interpret) package. Using [node-interpret](https://github.com/gulpjs/interpret), webpack can handle many different types of configuration files.
 
 
 ## TypeScript
 
-为了用 [TypeScript](http://www.typescriptlang.org/) 书写 webpack 的配置文件，必须先安装相关依赖，i.e., TypeScript and the relevant type definitions from the [DefinitelyTyped](https://definitelytyped.org/) project:：
+To write the webpack configuration in [TypeScript](http://www.typescriptlang.org/), you would first install the necessary dependencies, i.e., TypeScript and the relevant type definitions from the [DefinitelyTyped](https://definitelytyped.org/) project:
 
 ``` bash
 npm install --save-dev typescript ts-node @types/node @types/webpack
@@ -24,13 +25,13 @@ npm install --save-dev typescript ts-node @types/node @types/webpack
 npm install --save-dev @types/webpack-dev-server
 ```
 
-之后就可以使用 TypeScript 书写 webpack 的配置文件了：
+and then proceed to write your configuration:
 
 __webpack.config.ts__
 
 ```typescript
-import path from 'path';
-import webpack from 'webpack';
+import * as path from 'path';
+import * as webpack from 'webpack';
 
 const config: webpack.Configuration = {
   mode: 'production',
@@ -44,24 +45,24 @@ const config: webpack.Configuration = {
 export default config;
 ```
 
-以上示例假定 webpack 版本 >= 2.7，或者，在  `tsconfig.json` 文件中，具有 `esModuleInterop` 和 `allowSyntheticDefaultImports` 这两个新的编译器选项的较新版本 TypeScript。
+Above sample assumes version >= 2.7 or newer of TypeScript is used with the new `esModuleInterop` and `allowSyntheticDefaultImports` compiler options in your `tsconfig.json` file.
 
-注意，你还需要核对 `tsconfig.json` 文件。如果 `tsconfig.json` 中的 `compilerOptions` 中的 module 字段是 `commonjs` ，则配置是正确的，否则 webpack 将因为错误而构建失败。发生这种情况，是因为 `ts-node` 不支持 `commonjs` 以外的任何模块语法。
+Note that you'll also need to check your `tsconfig.json` file. If the module in `compilerOptions` in `tsconfig.json` is `commonjs`, the setting is complete, else webpack will fail with an error. This occurs because `ts-node` does not support any module syntax other than `commonjs`.
 
-这个问题有两种解决方案：
+There are two solutions to this issue:
 
-- 修改 `tsconfig.json`。
-- 安装 `tsconfig-paths`。
+- Modify `tsconfig.json`.
+- Install `tsconfig-paths`.
 
-__第一个选项_是指，打开你的 `tsconfig.json` 文件并查找 `compilerOptions`。将 `target` 设置为 `"ES5"`，以及将 `module` 设置为 `"CommonJS"`（或者完全移除 `module` 选项）。
+The __first option__ is to open your `tsconfig.json` file and look for `compilerOptions`. Set `target` to `"ES5"` and `module` to `"CommonJS"` (or completely remove the `module` option).
 
-__第二个选项_是指，安装 `tsconfig-paths` 包：
+The __second option__ is to install the `tsconfig-paths` package:
 
 ``` bash
 npm install --save-dev tsconfig-paths
 ```
 
-然后，为你的 webpack 配置，专门创建一个单独的 TypeScript 配置：
+And create a separate TypeScript configuration specifically for your webpack configs:
 
 __tsconfig-for-webpack-config.json__
 
@@ -75,9 +76,9 @@ __tsconfig-for-webpack-config.json__
 }
 ```
 
-T> `ts-node` 可以使用 `tsconfig-paths` 提供的环境变量来解析 `tsconfig.json` 文件。
+T> `ts-node` can resolve a `tsconfig.json` file using the environment variable provided by `tsconfig-paths`.
 
-然后，设置 `tsconfig-paths` 提供的环境变量 `process.env.TS_NODE_PROJECT`，如下所示：
+Then set the environment variable `process.env.TS_NODE_PROJECT` provided by `tsconfig-paths` like so:
 
 __package.json__
 
@@ -94,13 +95,13 @@ W> We had been getting reports that `TS_NODE_PROJECT` might not work with `"TS_N
 
 ## CoffeeScript
 
-类似的，为了使用 [CoffeeScript](https://coffeescript.org/) 来书写配置文件, 同样需要安装相关的依赖：
+Similarly, to use [CoffeeScript](https://coffeescript.org/), you would first install the necessary dependencies:
 
 ``` bash
 npm install --save-dev coffee-script
 ```
 
-之后就可以使用 Coffeecript 书写配置文件了：
+and then proceed to write your configuration:
 
 __webpack.config.coffee__
 
@@ -131,11 +132,11 @@ module.exports = config
 
 ## Babel and JSX
 
-在以下的例子中，使用了 JSX（React 形式的 javascript）以及 Babel 来创建 JSON 形式的 webpack 配置文件：
+In the example below JSX (React JavaScript Markup) and Babel are used to create a JSON Configuration that webpack can understand.
 
-> 感谢 [Jason Miller](https://twitter.com/_developit/status/769583291666169862)
+> Courtesy of [Jason Miller](https://twitter.com/_developit)
 
-首先安装依赖：
+First install the necessary dependencies:
 
 ``` bash
 npm install --save-dev babel-register jsxobj babel-preset-es2015
@@ -176,4 +177,4 @@ export default (
 );
 ```
 
-W> 如果你在其他地方也使用了 Babel 并且把`模块(modules)`设置为了 `false`，那么你要么同时维护两份单独的 `.babelrc` 文件，要么使用 `const jsxobj = requrie('jsxobj');` 并且使用 `moduel.exports` 而不是新版本的 `import` 和 `export` 语法。这是因为尽管 Node.js 已经支持了许多 ES6 的新特性，然而还无法支持 ES6 模块语法。
+W> If you are using Babel elsewhere and have `modules` set to `false`, you will have to either maintain two separate `.babelrc` files or use `const jsxobj = require('jsxobj');` and `module.exports` instead of the new `import` and `export` syntax. This is because while Node does support many new ES6 features, they don't yet support ES6 module syntax.

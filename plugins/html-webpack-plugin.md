@@ -4,23 +4,24 @@ contributors:
   - ampedandwired
   - simon04
   - Sibiraj-S
+  - EugeneHlushko
 ---
 
-[`HtmlWebpackPlugin`](https://github.com/jantimon/html-webpack-plugin)简化了HTML文件的创建，以便为你的webpack包提供服务。这对于在文件名中包含每次会随着编译而发生变化哈希的 webpack bundle 尤其有用。 你可以让插件为你生成一个HTML文件，使用[lodash模板](https://lodash.com/docs#template)提供你自己的模板，或使用你自己的[loader](/loaders)。
+The [`HtmlWebpackPlugin`](https://github.com/jantimon/html-webpack-plugin) simplifies creation of HTML files to serve your webpack bundles. This is especially useful for webpack bundles that include a hash in the filename which changes every compilation. You can either let the plugin generate an HTML file for you, supply your own template using [lodash templates](https://lodash.com/docs#template), or use your own [loader](/loaders).
 
 
-## 安装
+## Installation
 
 ``` bash
 npm install --save-dev html-webpack-plugin
 ```
 
 
-## 基本用法
+## Basic Usage
 
-该插件将为你生成一个 HTML5 文件，
-其中包括使用 `script` 标签的 body 中的所有 webpack 包。
-只需添加插件到你的 webpack 配置如下：
+The plugin will generate an HTML5 file for you that includes all your webpack
+bundles in the body using `script` tags. Just add the plugin to your webpack
+configuration as follows:
 
 ```javascript
 var HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -36,7 +37,7 @@ module.exports = {
 };
 ```
 
-这将会产生一个包含以下内容的文件 `dist/index.html`：
+This will generate a file `dist/index.html` containing the following:
 
 ```html
 <!DOCTYPE html>
@@ -51,19 +52,16 @@ module.exports = {
 </html>
 ```
 
-如果你有多个 webpack 入口点，
-他们都会在生成的HTML文件中的 `script` 标签内。
+If you have multiple webpack entry points, they will all be included with `<script>` tags in the generated HTML.
 
-如果你有任何CSS assets 在webpack的输出中（例如，
-利用 [MiniCssExtractPlugin](/plugins/mini-css-extract-plugin/) 提取CSS），
-那么这些将被包含在HTML head中的`<link>`标签内。
+If you have any CSS assets in webpack's output (for example, CSS extracted with the [MiniCssExtractPlugin](/plugins/mini-css-extract-plugin/)) then these will be included with `<link>` tags in the `<head>` element of generated HTML.
 
 
-## 配置
+## Configuration
 
-获取所有的配置选项，请浏览[插件文档](https://github.com/jantimon/html-webpack-plugin#options)。
+For all configuration options, please see the [plugin documentation](https://github.com/jantimon/html-webpack-plugin#options).
 
 
-## 第三方插件
+## Third party addons
 
-这个插件支持第三方插件。详细列表参阅[文档](https://github.com/jantimon/html-webpack-plugin#plugins)。
+The plugin supports addons. For a list see the [documentation](https://github.com/jantimon/html-webpack-plugin#plugins).

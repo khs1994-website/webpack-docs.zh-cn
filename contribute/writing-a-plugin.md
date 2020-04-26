@@ -1,5 +1,5 @@
 ---
-title: 编写一个插件
+title: Writing a Plugin
 sort: 3
 contributors:
   - tbroadley
@@ -7,31 +7,35 @@ contributors:
   - iamakulov
   - byzyk
   - franjohn21
+  - EugeneHlushko
+  - snitin315
 ---
 
-插件向第三方开发者提供了 webpack 引擎中完整的能力。使用阶段式的构建回调，开发者可以引入它们自己的行为到 webpack 构建流程中。创建插件比创建 loader 更加高级，因为你将需要理解一些 webpack 底层的内部特性来实现相应的钩子，所以做好阅读一些源码的准备！
+Plugins expose the full potential of the webpack engine to third-party developers. Using staged build callbacks, developers can introduce their own behaviors into the webpack build process. Building plugins is a bit more advanced than building loaders, because you'll need to understand some of the webpack low-level internals to hook into them. Be prepared to read some source code!
 
-## 创建一个插件
+## Creating a Plugin
 
-一个插件由以下构成
+A plugin for webpack consists of:
 
-- 一个 JavaScript 命名函数。
-- 在插件函数的 prototype 上定义一个 `apply` 方法。
-- 指定一个绑定到 webpack 自身的[事件钩子](/api/compiler-hooks/)。
-- 使用webpack提供的API进行构建
+- A named JavaScript function or a JavaScript class.
+- Defines `apply` method in its prototype.
+- Specifies an [event hook](/api/compiler-hooks/) to tap into.
+- Manipulates webpack internal instance specific data.
+- Invokes webpack provided callback after functionality is complete.
 
 ```javascript
+// A JavaScript class.
 class MyExampleWebpackPlugin {
-  // 定义`apply`
+  // Define `apply` as its prototype method which is supplied with compiler as its argument
   apply(compiler) {
-    // 指定事件钩子
-    compiler.hooks.compile.tapAsync(
-      'afterCompile',
+    // Specify the event hook to attach to
+    compiler.hooks.emit.tapAsync(
+      'MyExampleWebpackPlugin',
       (compilation, callback) => {
         console.log('This is an example plugin!');
         console.log('Here’s the `compilation` object which represents a single build of assets:', compilation);
 
-        // 使用webpack提供的API进行构建
+        // Manipulate the build using the plugin API provided by webpack
         compilation.addModule(/* ... */);
 
         callback();
@@ -41,20 +45,17 @@ class MyExampleWebpackPlugin {
 }
 ```
 
-## 基本插件架构
+## Basic plugin architecture
 
-插件是由一个构造函数（此构造函数上的 prototype 对象具有 `apply` 方法）的所实例化出来的。这个 `apply` 方法在安装插件时，会被 webpack compiler 调用一次。`apply` 方法可以接收一个 webpack compiler 对象的引用，从而可以在回调函数中访问到 compiler 对象。一个简单的插件结构如下：
+Plugins are instantiated objects with an `apply` method on their prototype. This `apply` method is called once by the webpack compiler while installing the plugin. The `apply` method is given a reference to the underlying webpack compiler, which grants access to compiler callbacks. A simple plugin is structured as follows:
 
 ```javascript
 class HelloWorldPlugin {
-  constructor(options) {
-    this.options = options;
-  }
-
   apply(compiler) {
-    compiler.hooks.done.tap('HelloWorldPlugin', () => {
+    compiler.hooks.done.tap('Hello World Plugin', (
+      stats /* stats is passed as an argument when done hook is tapped.  */
+    ) => {
       console.log('Hello World!');
-      console.log(this.options);
     });
   }
 }
@@ -62,43 +63,59 @@ class HelloWorldPlugin {
 module.exports = HelloWorldPlugin;
 ```
 
-然后，要使用这个插件，在你的 webpack 配置的 `plugins` 数组中添加一个实例：
+Then to use the plugin, include an instance in your webpack configuration `plugins` array:
 
 ```javascript
 // webpack.config.js
 var HelloWorldPlugin = require('hello-world');
 
 module.exports = {
-  // ... 这里是其他配置 ...
+  // ... configuration settings here ...
   plugins: [new HelloWorldPlugin({ options: true })]
 };
 ```
-## Compiler 和 Compilation
-
-在插件开发中最重要的两个资源就是 `compiler` 和 `compilation` 对象。理解它们的角色是扩展 webpack 引擎重要的第一步。
-
-- `compiler` 对象代表了完整的 webpack 环境配置。这个对象在启动 webpack 时被一次性建立，并配置好所有可操作的设置，包括 options，loader 和 plugin。当在 webpack 环境中应用一个插件时，插件将收到此 compiler 对象的引用。可以使用它来访问 webpack 的主环境。
-
-- `compilation` 对象代表了一次资源版本构建。当运行 webpack 开发环境中间件时，每当检测到一个文件变化，就会创建一个新的 compilation，从而生成一组新的编译资源。一个 compilation 对象表现了当前的模块资源、编译生成资源、变化的文件、以及被跟踪依赖的状态信息。compilation 对象也提供了很多关键时机的回调，以供插件做自定义处理时选择使用。
-
-这两个组件是任何 webpack 插件不可或缺的部分（特别是 `compilation`），因此，开发者在阅读源码，并熟悉它们之后，会感到获益匪浅：
-
-- [Compiler Source](https://github.com/webpack/webpack/blob/master/lib/Compiler.js)
-- [Compilation Source](https://github.com/webpack/webpack/blob/master/lib/Compilation.js)
 
 
-## 访问 compilation 对象
+Use [`schema-utils`](https://github.com/webpack/schema-utils) in order to validate the options being passed through the plugin options. Here is an example:
 
-使用 compiler 对象时，你可以绑定提供了编译 compilation 引用的回调函数，然后拿到每次新的 compilation 对象。这些 compilation 对象提供了一些钩子函数，来钩入到构建流程的很多步骤中。
+```javascript
+
+import validateOptions from 'schema-utils';
+
+// schema for options object
+const schema = {
+  type: 'object',
+  properties: {
+    test: {
+      type: 'string'
+    }
+  }
+};
+
+export default class HelloWorldPlugin {
+
+  constructor(options = {}){
+    validateOptions(schema, options, 'Hello World Plugin');
+  }
+
+  apply(compiler) {}
+}
+```
+
+W> [`schema-utils`](https://github.com/webpack/schema-utils) API has changed in recent versions, although webpack still uses the `v1.0.0` version and we ask you to do the same until further notice.
+
+## Compiler and Compilation
+
+Among the two most important resources while developing plugins are the [`compiler`](/api/node/#compiler-instance) and [`compilation`](/api/compilation-hooks/) objects. Understanding their roles is an important first step in extending the webpack engine.
 
 ```javascript
 class HelloCompilationPlugin {
   apply(compiler) {
-    // 设置回调函数访问comilation对象:
-    compiler.hooks.compilation.tap('HelloCompilationPlugin', (compilation) => {
-      // 现在，设置回调访问compilation中的步骤：
+    // Tap into compilation hook which gives compilation as argument to the callback function
+    compiler.hooks.compilation.tap('HelloCompilationPlugin', compilation => {
+      // Now we can tap into various hooks available through compilation
       compilation.hooks.optimize.tap('HelloCompilationPlugin', () => {
-        console.log('Hello compilation!');
+        console.log('Assets are being optimized.');
       });
     });
   }
@@ -107,39 +124,25 @@ class HelloCompilationPlugin {
 module.exports = HelloCompilationPlugin;
 ```
 
-这里列出 `compiler`, `compilation` 和其他重要对象上可用 hooks，请查看 [插件 API](/api/plugins/) 文档。
+The list of hooks available on the `compiler`, `compilation`, and other important objects, see the [plugins API](/api/plugins/) docs.
 
-## 异步事件钩子
+## Async event hooks
 
-有些插件 hooks 是异步的。想要 tap(触及) 某些 hooks，我们可以使用同步方式运行的 `tap` 方法，或者使用异步方式运行的 `tapAsync` 方法或 `tapPromise` 方法。
+Some plugin hooks are asynchronous. To tap into them, we can use `tap` method which will behave in synchronous manner or use one of `tapAsync` method or `tapPromise` method which are asynchronous methods.
 
-## 异步事件钩子
+### tapAsync
 
-在我们使用 `tapAsync` 方法 tap 插件时，我们需要调用 callback，此 callback 将作为最后一个参数传入函数。
+When we use `tapAsync` method to tap into plugins, we need to call the callback function which is supplied as the last argument to our function.
 
 ```javascript
 class HelloAsyncPlugin {
   apply(compiler) {
-    // tapAsync() is callback-based
-    compiler.hooks.emit.tapAsync('HelloAsyncPlugin', function(compilation, callback) {
+    compiler.hooks.emit.tapAsync('HelloAsyncPlugin', (compilation, callback) => {
+      // Do something async...
       setTimeout(function() {
         console.log('Done with async work...');
         callback();
       }, 1000);
-    });
-
-    // tapPromise() is promise-based
-    compiler.hooks.emit.tapPromise('HelloAsyncPlugin', (compilation) => {
-      return doSomethingAsync()
-        .then(() => {
-          console.log('Done with async work...');
-        });
-    });
-
-    // Plain old tap() is still here:
-    compiler.hooks.emit.tap('HelloAsyncPlugin', () => {
-      // 这里没有异步事件
-      console.log('Done with sync work...');
     });
   }
 }
@@ -147,15 +150,38 @@ class HelloAsyncPlugin {
 module.exports = HelloAsyncPlugin;
 ```
 
-## 示例
+#### tapPromise
 
-一旦能我们深入理解 webpack compiler 和每个独立的 compilation，我们就能通过 webpack 引擎本身做到无穷无尽的事情。我们可以重新格式化已有的文件，创建衍生的文件，或者制作全新的生成文件。
+When we use `tapPromise` method to tap into plugins, we need to return a promise which resolves when our asynchronous task is completed.
 
-我们来写一个简单的示例插件，生成一个叫做 `filelist.md` 的新文件；文件内容是所有构建生成的文件的列表。这个插件大概像下面这样：
+```javascript
+class HelloAsyncPlugin {
+  apply(compiler) {
+    compiler.hooks.emit.tapPromise('HelloAsyncPlugin', compilation => {
+      // return a Promise that resolves when we are done...
+      return new Promise((resolve, reject) => {
+        setTimeout(function() {
+          console.log('Done with async work...');
+          resolve();
+        }, 1000);
+      });
+    });
+  }
+}
+
+module.exports = HelloAsyncPlugin;
+```
+
+## Example
+
+Once we can latch onto the webpack compiler and each individual compilations, the possibilities become endless for what we can do with the engine itself. We can reformat existing files, create derivative files, or fabricate entirely new assets.
+
+Let's write a simple example plugin that generates a new build file called `filelist.md`; the contents of which will list all of the asset files in our build. This plugin might look something like this:
 
 ```javascript
 class FileListPlugin {
   apply(compiler) {
+    // emit is asynchronous hook, tapping into it using tapAsync, you can use tapPromise/tap(synchronous) as well
     compiler.hooks.emit.tapAsync('FileListPlugin', (compilation, callback) => {
       // Create a header string for the generated file:
       var filelist = 'In this build:\n\n';
@@ -163,15 +189,15 @@ class FileListPlugin {
       // Loop through all compiled assets,
       // adding a new line item for each filename.
       for (var filename in compilation.assets) {
-        filelist += ('- '+ filename +'\n');
+        filelist += '- ' + filename + '\n';
       }
 
       // Insert this list into the webpack build as a new file asset:
       compilation.assets['filelist.md'] = {
-        source() {
+        source: function() {
           return filelist;
         },
-        size() {
+        size: function() {
           return filelist.length;
         }
       };
@@ -184,11 +210,11 @@ class FileListPlugin {
 module.exports = FileListPlugin;
 ```
 
-## 不同插件形状
+## Different Plugin Shapes
 
-根据插件所能触及到的 event hook(事件钩子)，对其进行分类。每个 event hook 都被预先定义为 synchronous hook(同步), asynchronous hook(异步), waterfall hook(瀑布), parallel hook(并行)，而在 webpack 内部会使用 call/callAsync 方法调用这些 hook。通常在 `this.hooks` 属性中指定可以支持或可以触及的 hooks 列表。
+A plugin can be classified into types based on the event hooks it taps into. Every event hook is pre-defined as synchronous or asynchronous or waterfall or parallel hook and hook is called internally using call/callAsync method. The list of hooks that are supported or can be tapped into are generally specified in `this.hooks` property.
 
-示例：
+For example:
 
 ```javascript
 this.hooks = {
@@ -196,66 +222,67 @@ this.hooks = {
 };
 ```
 
-这表示唯一支持的 hook 是 `shouldEmit`，而 hook 的类型是 `SyncBailHook`，传递给所有触及到 `shouldEmit` hook 的插件的唯一参数是 `compilation`。
+It represents that the only hook supported is `shouldEmit` which is a hook of `SyncBailHook` type and the only parameter which will be passed to any plugin that taps into `shouldEmit` hook is `compilation`.
 
-以下是支持的各种 hooks 类型：
+Various types of hooks supported are :
 
-### synchronous hooks(同步钩子)
+### Synchronous Hooks
 
-- __SyncHook(同步钩子)__
+- __SyncHook__
 
-    - 通过 `new SyncHook([params])` 定义。
-    - 使用 `tap` 方法触及。
-    - 使用 `call(...params)` 方法调用。
+    - Defined as `new SyncHook([params])`
+    - Tapped into using `tap` method.
+    - Called using `call(...params)` method.
 
-- __Bail Hooks(保释钩子)__
+- __Bail Hooks__
 
-    - 通过 `SyncBailHook[params]` 定义。
-    - 使用 `tap` 方法触及。
-    - 使用 `call(...params)` 方法调用。
+    - Defined using `SyncBailHook[params]`
+    - Tapped into using `tap` method.
+    - Called using `call(...params)` method.
 
-  在这些 hooks 类型中，一个接一个地调用每个插件，并且 callback 会传入特定的 `args`。如果任何插件返回任何非 undefined 值，则由 hook 返回该值，并且不再继续调用插件 callback。许多有用的事件，如 `optimizeChunks`, `optimizeChunkModules` 都是 SyncBailHooks 类型。
+  In these type of hooks, each of the plugin callbacks will be invoked one after the other with the specific `args`. If any value is returned except undefined by any plugin, then that value is returned by hook and no further plugin callback is invoked. Many useful events like `optimizeChunks`, `optimizeChunkModules` are SyncBailHooks.
 
-- __Waterfall Hooks(瀑布钩子)__
+- __Waterfall Hooks__
 
-    - 通过 `SyncWaterfallHook[params]` 定义。
-    - 使用 `tap` 方法触及。
-    - 使用 `call(...params)` 方法调用。
+    - Defined using `SyncWaterfallHook[params]`
+    - Tapped into using `tap` method.
+    - Called using `call( ... params)` method
 
-  在这些 hooks 类型中，一个接一个地调用每个插件，并且会使用前一个插件的返回值，作为后一个插件的参数。必须考虑插件的执行顺序。
-  它必须接收来自先前执行插件的参数。第一个插件的值是 `init`。因此，waterfall hooks 必须提供至少一个参数。这种插件模式用于 Tapable 实例，而这些实例与 `ModuleTemplate`, `ChunkTemplate` 等 webpack 模板相互关联。
+  Here each of the plugins are called one after the other with the arguments from the return value of the previous plugin. The plugin must take the order of its execution into account.
+  It must accept arguments from the previous plugin that was executed. The value for the first plugin is `init`. Hence at least 1 param must be supplied for waterfall hooks. This pattern is used in the Tapable instances which are related to the webpack templates like `ModuleTemplate`, `ChunkTemplate` etc.
 
-### asynchronous hooks(异步钩子)
+### Asynchronous Hooks
 
-- __Async Series Hook(异步串行钩子)__
+- __Async Series Hook__
 
-    - 通过 `AsyncSeriesHook[params]` 定义。
-    - 使用 `tap`/`tapAsync`/`tapPromise` 方法触及。
-    - 使用 `callAsync(...params)` 方法调用。
+    - Defined using `AsyncSeriesHook[params]`
+    - Tapped into using `tap`/`tapAsync`/`tapPromise` method.
+    - Called using `callAsync( ... params)` method
 
-  调用插件处理函数，传入所有参数，并使用签名 `(err?: Error) -> void` 调用回调函数。处理函数按照注册顺序进行调用。所有处理函数都被调用之后会调用 `callback`。
-  这种插件模式常用于 `emit`, `run` 等事件。
+  The plugin handler functions are called with all arguments and a callback function with the signature `(err?: Error) -> void`. The handler functions are called in order of registration. `callback` is called after all the handlers are called.
+  This is also a commonly used pattern for events like `emit`, `run`.
 
-- __Async waterfall(异步瀑布钩子)__ 插件将以瀑布方式异步使用。
+- __Async waterfall__ The plugins will be applied asynchronously in the waterfall manner.
 
-    - 通过 `AsyncWaterfallHook[params]` 定义。
-    - 使用 `tap`/`tapAsync`/`tapPromise` 方法触及。
-    - 使用 `callAsync(...params)` 方法调用。
+    - Defined using `AsyncWaterfallHook[params]`
+    - Tapped into using `tap`/`tapAsync`/`tapPromise` method.
+    - Called using `callAsync( ... params)` method
 
-  调用插件处理函数，传入当前值作为参数，并使用签名 `(err?: Error) -> void` 调用回调函数。在调用处理函数中的 `nextValue`，是下一个处理函数的当前值。第一个处理函数的当前值是 `init`。所有处理函数都被调用之后，会调用 `callback`，并且传入最后一个值。如果任何处理函数向 `err` 方法传递一个值，则会调用 callback，并且将这个错误传入，然后不再调用处理函数。
-  这种插件模式常用于 `before-resolve`, `after-resolve` 等事件。
+  The plugin handler functions are called with the current value and a callback function with the signature `(err: Error, nextValue: any) -> void.` When called `nextValue` is the current value for the next handler. The current value for the first handler is `init`. After all handlers are applied, callback is called with the last value. If any handler passes a value for `err`, the callback is called with this error and no more handlers are called.
+  This plugin pattern is expected for events like `before-resolve` and `after-resolve`.
 
 - __Async Series Bail__
 
-    - 通过 `AsyncSeriesBailHook[params]` 定义。
-    - 使用 `tap`/`tapAsync`/`tapPromise` 方法触及。
-    - 使用 `callAsync(...params)` 方法调用。
+    - Defined using `AsyncSeriesBailHook[params]`
+    - Tapped into using `tap`/`tapAsync`/`tapPromise` method.
+    - Called using `callAsync( ... params)` method
 
 - __Async Parallel__
 
-    - 通过 `AsyncParallelHook[params]` 定义。
-    - 使用 `tap`/`tapAsync`/`tapPromise` 方法触及。
-    - 使用 `callAsync(...params)` 方法调用。
+    - Defined using `AsyncParallelHook[params]`
+    - Tapped into using `tap`/`tapAsync`/`tapPromise` method.
+    - Called using `callAsync( ... params)` method
 
-### 配置默认值
-webpack 会在插件配置应用之后再应用自身的默认配置。这允许插件可以指定他们自己的默认配置并且提供一个方式去创建配置预设插件。
+### Configuration defaults
+
+webpack applies configuration defaults after plugins defaults are applied. This allows plugins to feature their own defaults and provides a way to create configuration preset plugins.

@@ -1,15 +1,21 @@
 ---
-title: parser
+title: JavascriptParser Hooks
 group: Plugins
-sort: 4
+sort: 11
 contributors:
   - byzyk
   - DeTeam
+  - misterdev
+  - EugeneHlushko
 ---
 
-`parser` 实例，是用来解析由 webpack 处理过的每个模块。`parser` 也是扩展自 `tapable` 的 webpack 类，并且提供多种 `tapable` 钩子，插件作者可以使用它来自定义解析过程。
+The `parser` instance, found in the `compiler`, is used to parse each module
+being processed by webpack. The `parser` is yet another webpack class that
+extends `tapable` and provides a variety of `tapable` hooks that can be used by
+plugin authors to customize the parsing process.
 
-以下示例中，`parser` 位于 [module factories](/api/compiler-hooks/#normalmodulefactory) 这个中，因此需要调用额外钩子来进行获取：
+The `parser` is found within [module factories](/api/compiler-hooks/#normalmodulefactory) and therefore takes little
+more work to access:
 
 ``` js
 compiler.hooks.normalModuleFactory.tap('MyPlugin', factory => {
@@ -19,297 +25,530 @@ compiler.hooks.normalModuleFactory.tap('MyPlugin', factory => {
 });
 ```
 
-和 `compiler` 用法相同，取决于不同的钩子类型，也可以在某些钩子上访问 `tapAsync` 和 `tapPromise`。
+As with the `compiler`, `tapAsync` and `tapPromise` may also be available
+depending on the type of hook.
 
 
-## 相关钩子
+## Hooks
 
-以下生命周期钩子函数，是由 `parser` 暴露，可以通过如下方式访问：
+The following lifecycle hooks are exposed by the `parser` and can be accessed
+as such:
 
 
 ### evaluateTypeof
 
 `SyncBailHook`
 
-取值标识符(identifier)的类型。（译注：取值(evaluate)是一个动词，表示对参数进行求值并返回）
+Triggered when evaluating an expression consisting in a `typeof` of a free variable
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+parser.hooks.evaluateTypeof.for('myIdentifier').tap('MyPlugin', expression => {
+  /* ... */
+  return expressionResult;
+});
+```
+
+This will trigger the `evaluateTypeof` hook:
+
+```js
+const a = typeof myIdentifier;
+```
+
+This won't trigger:
+
+```js
+const myIdentifier = 0;
+const b = typeof myIdentifier;
+```
 
 
 ### evaluate
 
 `SyncBailHook`
 
-取值一个表达式(expression)
+Called when evaluating an expression.
 
-参数：`expression`
+- Hook parameters: `expressionType`
+- Callback parameters: `expression`
+
+For example:
+
+__index.js__
+
+```js
+const a = new String();
+```
+
+__MyPlugin.js__
+
+```js
+parser.hooks.evaluate.for('NewExpression').tap('MyPlugin', expression => {
+  /* ... */
+  return expressionResult;
+});
+```
+
+Where the expressions types are:
+
+- `'ArrowFunctionExpression'`
+- `'AssignmentExpression'`
+- `'AwaitExpression'`
+- `'BinaryExpression'`
+- `'CallExpression'`
+- `'ClassExpression'`
+- `'ConditionalExpression'`
+- `'FunctionExpression'`
+- `'Identifier'`
+- `'LogicalExpression'`
+- `'MemberExpression'`
+- `'NewExpression'`
+- `'ObjectExpression'`
+- `'SequenceExpression'`
+- `'SpreadElement'`
+- `'TaggedTemplateExpression'`
+- `'TemplateLiteral'`
+- `'ThisExpression'`
+- `'UnaryExpression'`
+- `'UpdateExpression'`
 
 
 ### evaluateIdentifier
 
 `SyncBailHook`
 
-取值一个自由变量标识符。
+Called when evaluating an identifier that is a free variable.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
 
 
 ### evaluateDefinedIdentifier
 
 `SyncBailHook`
 
-取值一个定义变量标识符。
+Called when evaluating an identifier that is a defined variable.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
 
 
 ### evaluateCallExpressionMember
 
 `SyncBailHook`
 
-进行一次「成功取值表达式的成员函数(member function of a successfully evaluated expression)」调用取值。
+Called when evaluating a call to a member function of a successfully evaluated expression.
 
-参数：`expression` `param`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression` `param`
+
+This expression will trigger the hook:
+
+__index.js__
+
+```js
+const a = expression.myFunc();
+```
+
+__MyPlugin.js__
+
+```js
+parser.hooks.evaluateCallExpressionMember.for('myFunc').tap('MyPlugin', (expression, param) => {
+  /* ... */
+  return expressionResult;
+});
+```
 
 
 ### statement
 
 `SyncBailHook`
 
-通用钩子，在从代码片段中解析语句时调用。
+General purpose hook that is called for every parsed statement in a code fragment.
 
-参数：`statement`
+- Callback Parameters: `statement`
+
+```js
+parser.hooks.statement.tap('MyPlugin', statement => { /* ... */ });
+```
+
+Where the `statement.type` could be:
+
+- `'BlockStatement'`
+- `'VariableDeclaration'`
+- `'FunctionDeclaration'`
+- `'ReturnStatement'`
+- `'ClassDeclaration'`
+- `'ExpressionStatement'`
+- `'ImportDeclaration'`
+- `'ExportAllDeclaration'`
+- `'ExportDefaultDeclaration'`
+- `'ExportNamedDeclaration'`
+- `'IfStatement'`
+- `'SwitchStatement'`
+- `'ForInStatement'`
+- `'ForOfStatement'`
+- `'ForStatement'`
+- `'WhileStatement'`
+- `'DoWhileStatement'`
+- `'ThrowStatement'`
+- `'TryStatement'`
+- `'LabeledStatement'`
+- `'WithStatement'`
 
 
 ### statementIf
 
 `SyncBailHook`
 
-...
+Called when parsing an if statement. Same as the `statement` hook, but triggered only when `statement.type == 'IfStatement'`.
 
-参数：`statement`
+- Callback Parameters: `statement`
 
 
 ### label
 
 `SyncBailHook`
 
-...
+Called when parsing statements with a [label](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/label). Those statements have `statement.type === 'LabeledStatement'`.
 
-参数：`statement`
+- Hook Parameters: `labelName`
+- Callback Parameters: `statement`
 
 
 ### import
 
 `SyncBailHook`
 
-...
+Called for every import statement in a code fragment. The `source` parameter contains the name of the imported file.
 
-参数：`statement` `source`
+- Callback Parameters: `statement` `source`
+
+The following import statement will trigger the hook once:
+
+__index.js__
+
+```js
+import _ from 'lodash';
+```
+
+__MyPlugin.js__
+
+```js
+parser.hooks.import.tap('MyPlugin', (statement, source) => {
+  // source == 'lodash'
+});
+```
 
 
 ### importSpecifier
 
 `SyncBailHook`
 
-...
+Called for every specifier of every `import` statement.
 
-参数：`statement` `source` `exportName` `identifierName`
+- Callback Parameters: `statement` `source` `exportName` `identifierName`
+
+The following import statement will trigger the hook twice:
+
+__index.js__
+
+```js
+import _, { has } from 'lodash';
+```
+
+__MyPlugin.js__
+
+```js
+parser.hooks.importSpecifier.tap('MyPlugin', (statement, source, exportName, identifierName) => {
+  /* First call
+    source == 'lodash'
+    exportName == 'default'
+    identifierName == '_'
+  */
+  /* Second call
+    source == 'lodash'
+    exportName == 'has'
+    identifierName == 'has'
+  */
+});
+```
 
 
 ### export
 
 `SyncBailHook`
 
-...
+Called for every `export` statement in a code fragment.
 
-参数：`statement`
+- Callback Parameters: `statement`
 
 
 ### exportImport
 
 `SyncBailHook`
 
-...
+Called for every `export`-import statement eg: `export * from 'otherModule';`.
 
-参数：`statement` `source`
+- Callback Parameters: `statement` `source`
 
 
 ### exportDeclaration
 
 `SyncBailHook`
 
-...
+Called for every `export` statement exporting a declaration.
 
-参数：`statement` `declaration`
+- Callback Parameters: `statement` `declaration`
+
+Those exports will trigger this hook:
+
+```js
+export const myVar = 'hello'; // also var, let
+export function FunctionName(){}
+export class ClassName {}
+```
 
 
 ### exportExpression
 
 `SyncBailHook`
 
-...
+Called for every `export` statement exporting an expression e.g.`export default expression;`.
 
-参数：`statement` `declaration`
+- Callback Parameters: `statement` `declaration`
 
 
 ### exportSpecifier
 
 `SyncBailHook`
 
-...
+Called for every specifier of every `export` statement.
 
-参数：`statement` `identifierName` `exportName` `index`
+- Callback Parameters: `statement` `identifierName` `exportName` `index`
 
 
 ### exportImportSpecifier
 
 `SyncBailHook`
 
-...
+Called for every specifier of every `export`-import statement.
 
-参数：`statement` `source` `identifierName` `exportName` `index`
+- Callback Parameters: `statement` `source` `identifierName` `exportName` `index`
 
 
 ### varDeclaration
 
 `SyncBailHook`
 
-...
+Called when parsing a variable declaration.
 
-参数：`declaration`
+- Callback Parameters: `declaration`
 
 
 ### varDeclarationLet
 
 `SyncBailHook`
 
-...
+Called when parsing a variable declaration defined using `let`
 
-参数：`declaration`
+- Callback Parameters: `declaration`
 
 
 ### varDeclarationConst
 
 `SyncBailHook`
 
-...
+Called when parsing a variable declaration defined using `const`
 
-参数：`declaration`
+- Callback Parameters: `declaration`
 
 
 ### varDeclarationVar
 
 `SyncBailHook`
 
-...
+Called when parsing a variable declaration defined using `var`
 
-参数：`declaration`
+- Callback Parameters: `declaration`
 
 
 ### canRename
 
 `SyncBailHook`
 
-...
+Triggered before renaming an identifier to determine if the renaming is allowed. This is usually used together with the `rename` hook.
 
-参数：`initExpression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+var a = b;
+
+parser.hooks.canRename.for('b').tap('MyPlugin', expression => {
+  // returning true allows renaming
+  return true;
+});
+```
 
 
 ### rename
 
 `SyncBailHook`
 
-...
+Triggered when renaming to get the new identifier. This hook will be called only if `canRename` returns `true`.
 
-参数：`initExpression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+var a = b;
+
+parser.hooks.rename.for('b').tap('MyPlugin', expression => {});
+```
 
 
 ### assigned
 
 `SyncBailHook`
 
-...
+Called when parsing an `AssignmentExpression` before parsing the assigned expression.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+a += b;
+
+parser.hooks.assigned.for('a').tap('MyPlugin', expression => {
+  // this is called before parsing b
+});
+```
 
 
 ### assign
 
 `SyncBailHook`
 
-...
+Called when parsing an `AssignmentExpression` before parsing the assign expression.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+a += b;
+
+parser.hooks.assigned.for('a').tap('MyPlugin', expression => {
+  // this is called before parsing a
+});
+```
 
 
 ### typeof
 
 `SyncBailHook`
 
-...
+Triggered when parsing the `typeof` of an identifier
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
 
 
 ### call
 
 `SyncBailHook`
 
-...
+Called when parsing a function call.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+eval(/* something */);
+
+parser.hooks.call.for('eval').tap('MyPlugin', expression => {});
+```
 
 
 ### callAnyMember
 
 `SyncBailHook`
 
-...
+Triggered when parsing a call to a member function of an object.
 
-参数：`expression`
+- Hook Parameters: `objectIdentifier`
+- Callback Parameters: `expression`
+
+```js
+myObj.anyFunc();
+
+parser.hooks.callAnyMember.for('myObj').tap('MyPlugin', expression => {});
+```
 
 
 ### new
 
 `SyncBailHook`
 
-...
+Invoked when parsing a `new` expression.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+new MyClass();
+
+parser.hooks.new.for('MyClass').tap('MyPlugin', expression => {});
+```
 
 
 ### expression
 
 `SyncBailHook`
 
-...
+Called when parsing an expression.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+const a = this;
+
+parser.hooks.new.for('this').tap('MyPlugin', expression => {});
+```
 
 
 ### expressionAnyMember
 
 `SyncBailHook`
 
-...
+Executed when parsing a `MemberExpression`.
 
-参数：`expression`
+- Hook Parameters: `identifier`
+- Callback Parameters: `expression`
+
+```js
+const a = process.env;
+
+parser.hooks.new.for('process').tap('MyPlugin', expression => {});
+```
 
 
 ### expressionConditionalOperator
 
 `SyncBailHook`
 
-...
+Called when parsing a `ConditionalExpression` e.g. `condition ? a : b`
 
-参数：`expression`
+- Callback Parameters: `expression`
 
 
 ### program
 
 `SyncBailHook`
 
-访问代码片段的抽象语法树(abstract syntax tree - AST)
+Get access to the abstract syntax tree (AST) of a code fragment
 
-参数：`ast` `comments`
+Parameters: `ast` `comments`

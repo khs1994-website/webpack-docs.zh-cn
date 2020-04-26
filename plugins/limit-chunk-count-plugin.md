@@ -6,26 +6,27 @@ contributors:
   - tbroadley
   - byzyk
   - EugeneHlushko
+  - erykpiast
 ---
 
-当你在编写代码时，可能已经添加了许多代码分离点(code split point)来实现按需加载(load stuff on demand)。在编译完之后，你可能会注意到有一些很小的 chunk - 这产生了大量 HTTP 请求开销。`LimitChunkCountPlugin` 插件可以通过合并的方式，后处理你的 chunk，以减少请求数。
+While writing your code, you may have already added many code split points to load stuff on demand. After compiling you might notice that some chunks are too small - creating larger HTTP overhead. `LimitChunkCountPlugin` can post-process your chunks by merging them.
 
 ``` js
 new webpack.optimize.LimitChunkCountPlugin({
-  // 选项……
+  // Options...
 });
 ```
 
 
-## 选项
+## Options
 
-可以支持以下选项：
+The following options are supported:
 
 ### `maxChunks`
 
 `number`
 
-使用大于或等于 `1` 的值，来限制 chunk 的最大数量。使用 `1` 防止添加任何其他额外的 chunk，这是因为 entry/main chunk 也会包含在计数之中。
+Limit the maximum number of chunks using a value greater than or equal to `1`. Using `1` will prevent any additional chunks from being added as the entry/main chunk is also included in the count.
 
 __webpack.config.js__
 
@@ -43,35 +44,13 @@ module.exports = {
 
 ### `minChunkSize`
 
-`number`
-
-设置 chunk 的最小大小。
-
-__webpack.config.js__
-
-```javascript
-const webpack = require('webpack');
-module.exports = {
-  // ...
-  plugins: [
-    new webpack.optimize.LimitChunkCountPlugin({
-      minChunkSize: 1000
-    })
-  ]
-};
-```
+Keeping chunk size above the specified limit is no longer a feature of this plugin. Use [MinChunkSizePlugin)[/plugins/min-chunk-size-plugin] instead.
 
 
-## 命令行接口(CLI)用法
+## Usage via CLI
 
-此插件和其选项还可以通过 [命令行接口(CLI)](/api/cli/) 执行：
+This plugin and it's options can also be invoked via the [CLI](/api/cli/):
 
 ```bash
 webpack --optimize-max-chunks 15
-```
-
-或
-
-```bash
-webpack --optimize-min-chunk-size 10000
 ```

@@ -1,141 +1,77 @@
 ---
-title: Node.js
-sort: 14
+title: Node
+sort: 17
 contributors:
   - sokra
   - skipjack
   - oneforwonder
   - Rob--W
   - byzyk
+  - EugeneHlushko
+  - anikethsaha
 ---
 
-这些选项可以配置是否 polyfill 或 mock 某些 [Node.js 全局变量](https://nodejs.org/docs/latest/api/globals.html)和模块。这可以使最初为 Node.js 环境编写的代码，在其他环境（如浏览器）中运行。
+The following Node.js options configure whether to polyfill or mock certain [Node.js globals](https://nodejs.org/docs/latest/api/globals.html) and modules. This allows code originally written for the Node.js environment to run in other environments like the browser.
 
-此功能由 webpack 内部的 [`NodeStuffPlugin`](https://github.com/webpack/webpack/blob/master/lib/NodeStuffPlugin.js) 插件提供。如果 target 是 "web"（默认）或 "webworker"，那么 [`NodeSourcePlugin`](https://github.com/webpack/webpack/blob/master/lib/node/NodeSourcePlugin.js) 插件也会被激活。
+This feature is provided by webpack's internal [`NodeStuffPlugin`](https://github.com/webpack/webpack/blob/master/lib/NodeStuffPlugin.js) plugin. If the target is "web" (default) or "webworker", the [`NodeSourcePlugin`](https://github.com/webpack/webpack/blob/master/lib/node/NodeSourcePlugin.js) plugin is also activated.
 
 
 ## `node`
 
-`object`
+`boolean = false` `object`
 
-是一个对象，其中每个属性都是 Node.js 全局变量或模块的名称，每个 value 是以下其中之一……
+This is an object where each property is the name of a Node global or module and each value may be one of the following...
 
-- `true`：提供 polyfill。
-- `"mock"`：提供 mock 实现预期接口，但功能很少或没有。
-- `"empty"`：提供空对象。
-- `false`: 什么都不提供。预期获取此对象的代码，可能会因为获取不到此对象，触发 `ReferenceError` 而崩溃。尝试使用 `require('modulename')` 导入模块的代码，可能会触发 `Cannot find module "modulename"` 错误。
+- `true`: Provide a polyfill.
+- `'mock'`: Provide a mock that implements the expected interface but has little or no functionality.
+- `'empty'`: Provide an empty object.
+- `false`: Provide nothing. Code that expects this object may crash with a `ReferenceError`. Code that attempts to import the module using `require('modulename')` may trigger a `Cannot find module "modulename"` error.
 
-W> 注意，不是每个 Node 全局变量都支持所有选项。对于不支持的键值组合(property-value combination)，compiler 会抛出错误。更多细节请查看接下来的章节。
+W> Not every Node global supports all four options. The compiler will throw an error for property-value combinations that aren't supported (e.g. `global: 'empty'`). See the sections below for more details.
 
-这里是默认值：
+T> If you are using a module which needs global variables in it, use `ProvidePlugin` instead of `global`.
 
-```js
+These are the defaults:
+
+__webpack.config.js__
+
+```javascript
 module.exports = {
   //...
   node: {
-    console: false,
-    global: true,
-    process: true,
-    __filename: 'mock',
-    __dirname: 'mock',
-    Buffer: true,
-    setImmediate: true
-
-    // 更多选项，请查看“其他 Node.js 核心库”。
+    global: false,
+    __filename: false,
+    __dirname: false,
   }
 };
 ```
 
-从 webpack 3.0.0 开始，`node` 选项可能被设置为 `false`，以完全关闭 `NodeStuffPlugin` 和 `NodeSourcePlugin` 插件。
-
-
-## `node.console`
-
-`boolean | "mock"`
-
-默认值：`false`
-
-浏览器提供一个 `console` 对象，具有非常类似 Node.js `console` 的接口，所以通常不需要 polyfill。
-
-
-## `node.process`
-
-`boolean | "mock"`
-
-默认值：`true`
-
+Since webpack 3.0.0, the `node` option may be set to `false` to completely turn off the `NodeStuffPlugin` and `NodeSourcePlugin` plugins.
 
 ## `node.global`
 
-`boolean`
+`boolean = false`
 
-默认值：`true`
-
-关于此对象的准确行为，请查看[源码](https://github.com/webpack/webpack/blob/master/buildin/global.js)。
+See [the source](https://nodejs.org/api/globals.html) for the exact behavior of this object.
 
 
 ## `node.__filename`
 
-`boolean | "mock"`
+`string` `boolean = false`
 
-默认值：`"mock"`
+Options:
 
-选项：
-
-- `true`: __输入__文件的文件名，是相对于 [`context` 选项](https://webpack.js.org/configuration/entry-context/#context)。
-- `false`: 常规的 Node.js `__filename` 行为。在 Node.js 环境中运行时，__输出__文件的文件名。
-- `"mock"`: value 填充为 `"index.js"`.
+- `true`: The filename of the __input__ file relative to the [`context` option](https://webpack.js.org/configuration/entry-context/#context).
+- `false`: The regular Node.js `__filename` behavior. The filename of the __output__ file when run in a Node.js environment.
+- `'mock'`: The fixed value `'index.js'`.
 
 
 ## `node.__dirname`
 
-`boolean | "mock"`
+`string` `boolean = false`
 
-默认值：`"mock"`
+Options:
 
-选项：
-
-- `true`: __输入__文件的目录名，是相对于 [`context` 选项](https://webpack.js.org/configuration/entry-context/#context)。
-- `false`: 常规的 Node.js `__dirname` 行为。在 Node.js 环境中运行时，__输出__文件的目录名。
-- `"mock"`: value 填充为 `"/"`。
-
-
-## `node.Buffer`
-
-`boolean | "mock"`
-
-默认值：`true`
-
-
-## `node.setImmediate`
-
-`boolean | "mock" | "empty"`
-
-默认值：`true`
-
-
-## 其他 Node.js 核心库(Node.js core libraries)
-
-`boolean | "mock" | "empty"`
-
-W> 只有当 target 是未指定、"web" 或 "webworker" 这三种情况时，此选项才会被激活（通过 `NodeSourcePlugin`）。
-
-当 `NodeSourcePlugin` 插件启用时，则会使用 [`node-libs-browser`](https://github.com/webpack/node-libs-browser) 来对 Node.js 核心库 polyfill。请查看 [Node.js 核心库及其 polyfills](https://github.com/webpack/node-libs-browser#readme) 列表。
-
-默认情况下，如果有一个已知的 polyfill，webpack 会对每个 library 进行 polyfill，如果没有，则 webpack 不会执行任何操作。在后一种情况下，如果模块名称配置为 `false` 值，webpack 表现为不会执行任何操作。
-
-T> 为了导入内置的模块，使用 [`__non_webpack_require__`](/api/module-variables/#__non_webpack_require__-webpack-specific-)，例如，使用 `__non_webpack_require__('modulename')` 而不是 `require('modulename')`。
-
-示例：
-
-```js
-module.exports = {
-  //...
-  node: {
-    dns: 'mock',
-    fs: 'empty',
-    path: true,
-    url: false
-  }
-};
-```
+- `true`: The dirname of the __input__ file relative to the [`context` option](https://webpack.js.org/configuration/entry-context/#context).
+- `false`: The regular Node.js `__dirname` behavior. The dirname of the __output__ file when run in a Node.js environment.
+- `'mock'`: The fixed value `'/'`.

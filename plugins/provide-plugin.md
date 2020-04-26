@@ -8,7 +8,7 @@ contributors:
   - seckin92
 ---
 
-自动加载模块，而不必到处 `import` 或 `require` 。
+Automatically load modules instead of having to `import` or `require` them everywhere.
 
 ``` js
 new webpack.ProvidePlugin({
@@ -26,14 +26,26 @@ new webpack.ProvidePlugin({
 });
 ```
 
-任何时候，当 `identifier` 被当作未赋值的变量时，`module` 就会自动被加载，并且 `identifier` 会被这个 `module` 导出的内容所赋值。（或者被模块的 `property` 导出的内容所赋值，以支持命名导出(named export)）。
+By default, module resolution path is current folder (`./**)` and `node_modules`.
 
-W> 对于 ES2015 模块的 default export，你必须指定模块的 default 属性。
+It is also possible to specify full path:
 
+```js
+const path = require('path');
 
-## 使用：jQuery
+new webpack.ProvidePlugin({
+  identifier: path.resolve(path.join(__dirname, 'src/module1'))
+  // ...
+});
+```
 
-要自动加载 `jquery`，我们可以将两个变量都指向对应的 node 模块：
+Whenever the `identifier` is encountered as free variable in a module, the `module` is loaded automatically and the `identifier` is filled with the exports of the loaded `module` (or `property` in order to support named exports).
+
+For importing the default export of an ES2015 module, you have to specify the default property of module.
+
+## Usage: jQuery
+
+To automatically load `jquery` we can simply point both variables it exposes to the corresponding node module:
 
 ```javascript
 new webpack.ProvidePlugin({
@@ -42,19 +54,19 @@ new webpack.ProvidePlugin({
 });
 ```
 
-然后在我们任意源码中：
+Then in any of our source code:
 
 ```javascript
 // in a module
-$('#item'); // <= 起作用
-jQuery('#item'); // <= 起作用
-// $ 自动被设置为 "jquery" 输出的内容
+$('#item'); // <= just works
+jQuery('#item'); // <= just works
+// $ is automatically set to the exports of module "jquery"
 ```
 
 
-## 使用：jQuery 和 Angular 1
+## Usage: jQuery with Angular 1
 
-Angular 会寻找 `window.jQuery` 来决定 jQuery 是否存在, 查看[源码](https://github.com/angular/angular.js/blob/v1.5.9/src/Angular.js#L1821-L1823)。
+Angular looks for `window.jQuery` in order to determine whether jQuery is present, see the [source code](https://github.com/angular/angular.js/blob/v1.5.9/src/Angular.js#L1821-L1823).
 
 ```javascript
 new webpack.ProvidePlugin({
@@ -63,7 +75,7 @@ new webpack.ProvidePlugin({
 ```
 
 
-## 使用：Lodash Map
+## Usage: Lodash Map
 
 ```javascript
 new webpack.ProvidePlugin({
@@ -71,7 +83,7 @@ new webpack.ProvidePlugin({
 });
 ```
 
-### 使用：Vue.js
+### Usage: Vue.js
 
 ```javascript
 new webpack.ProvidePlugin({

@@ -1,21 +1,20 @@
 ---
-title: 输出(output)
+title: Output
 sort: 2
 contributors:
   - TheLarkInn
   - chyipin
   - rouzbeh84
   - byzyk
+  - EugeneHlushko
 ---
 
-配置 `output` 选项可以控制 webpack 如何向硬盘写入编译文件。注意，即使可以存在多个 `entry` 起点，但只指定一个 `output` 配置。
+Configuring the `output` configuration options tells webpack how to write the compiled files to disk. Note that, while there can be multiple `entry` points, only one `output` configuration is specified.
 
 
-## 用法(Usage)
+## Usage
 
-在 webpack 中配置 `output` 属性的最低要求是，将它的值设置为一个对象，包括以下属性：
-
-- `filename` 用于输出文件的文件名。
+The minimum requirement for the `output` property in your webpack configuration is to set its value to an object and provide an [`output.filename`](/configuration/output/#outputfilename) to use for the output file(s):
 
 __webpack.config.js__
 
@@ -27,12 +26,12 @@ module.exports = {
 };
 ```
 
-此配置将一个单独的 `bundle.js` 文件输出到 `dist` 目录中。
+This configuration would output a single `bundle.js` file into the `dist` directory.
 
 
-## 多个入口起点
+## Multiple Entry Points
 
-如果配置创建了多个单独的 "chunk"（例如，使用多个入口起点或使用像 CommonsChunkPlugin 这样的插件），则应该使用 [占位符(substitutions)](/configuration/output#output-filename) 来确保每个文件具有唯一的名称。
+If your configuration creates more than a single "chunk" (as with multiple entry points or when using plugins like CommonsChunkPlugin), you should use [substitutions](/configuration/output/#outputfilename) to ensure that each file has a unique name.
 
 ```javascript
 module.exports = {
@@ -46,13 +45,13 @@ module.exports = {
   }
 };
 
-// 写入到硬盘：./dist/app.js, ./dist/search.js
+// writes to disk: ./dist/app.js, ./dist/search.js
 ```
 
 
-## 高级进阶
+## Advanced
 
-以下是对资源使用 CDN 和 hash 的复杂示例：
+Here's a more complicated example of using a CDN and hashes for assets:
 
 __config.js__
 
@@ -66,10 +65,10 @@ module.exports = {
 };
 ```
 
-如果在编译时，不知道最终输出文件的 `publicPath` 是什么地址，则可以将其留空，并且在运行时通过入口起点文件中的 `__webpack_public_path__` 动态设置。
+In cases where the eventual `publicPath` of output files isn't known at compile time, it can be left blank and set dynamically at runtime via the `__webpack_public_path__` variable in the entry point file:
 
 ```javascript
 __webpack_public_path__ = myRuntimePublicPath;
 
-// 应用程序入口的其余部分
+// rest of your application entry
 ```

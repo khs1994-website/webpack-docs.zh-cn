@@ -1,9 +1,9 @@
 ---
 title: webpack
-sort: 0
+sort: -1
 ---
 
-## 编写代码
+## Write Your Code
 
 <div class="splash__wrap">
 <div class="splash__left">
@@ -31,7 +31,7 @@ export default function bar() {
 </div>
 
 
-## 打包
+## Bundle It
 
 <div class="splash__wrap">
 <div class="splash__left">
@@ -71,8 +71,8 @@ __page.html__
 </div>
 </div>
 
-然后在命令行运行 `webpack` 就会创建 `bundle.js`。
+Then run `webpack` on the command-line to create `bundle.js`.
 
-## 非常有趣？让我们深入其中！
+## Awesome isn't it? Let's dive in!
 
-__[立即开始](/guides/getting-started)__更多关于 webpack 核心概念的高级信息，请通过快速查阅__指南__部分，或深入__[概念](/concepts)__部分来了解。
+__[Get Started](/guides/getting-started)__ quickly in our __Guides__ section, or dig into the __[Concepts](/concepts)__ section for more high-level information on the core notions behind webpack.

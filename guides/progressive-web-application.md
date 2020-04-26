@@ -1,5 +1,5 @@
 ---
-title: 渐进式网络应用程序
+title: Progressive Web Application
 sort: 21
 contributors:
   - johnnyreilly
@@ -9,18 +9,18 @@ contributors:
   - aholzner
 ---
 
-T> 本指南继续沿用 [管理输出](/guides/output-management) 中的代码示例。
+T> This guide extends on code examples found in the [Output Management](/guides/output-management) guide.
 
-渐进式网络应用程序(progressive web application - PWA)，是一种可以提供类似于native app(原生应用程序) 体验的 web app(网络应用程序)。PWA 可以用来做很多事。其中最重要的是，在__离线(offline)__时应用程序能够继续运行功能。这是通过使用名为 [Service Workers](https://developers.google.com/web/fundamentals/primers/service-workers/) 的 web 技术来实现的。
+Progressive Web Applications (or PWAs) are web apps that deliver an experience similar to native applications. There are many things that can contribute to that. Of these, the most significant is the ability for an app to be able to function when __offline__. This is achieved through the use of a web technology called [Service Workers](https://developers.google.com/web/fundamentals/primers/service-workers/).
 
-本章将重点介绍，如何为我们的应用程序添加离线体验。我们将使用名为 [Workbox](https://github.com/GoogleChrome/workbox) 的 Google 项目来实现此目的，该项目提供的工具可帮助我们更简单地为 web app 提供离线支持。
+This section will focus on adding an offline experience to our app. We'll achieve this using a Google project called [Workbox](https://github.com/GoogleChrome/workbox) which provides tools that help make offline support for web apps easier to setup.
 
 
-## 现在，我们并没有运行在离线环境下
+## We Don't Work Offline Now
 
-到目前为止，我们一直是直接查看本地文件系统的输出结果。通常情况下，真正的用户是通过网络访问 web app；用户的浏览器会与一个提供所需资源（例如，`.html`, `.js` 和 `.css` 文件）的 __server__ 通讯。
+So far, we've been viewing the output by going directly to the local file system. Typically though, a real user accesses a web app over a network; their browser talking to a __server__ which will serve up the required assets (e.g. `.html`, `.js`, and `.css` files).
 
-我们通过搭建一个简易 server 下，测试下这种离线体验。这里使用 [http-server](https://www.npmjs.com/package/http-server) package：`npm install http-server --save-dev`。还要修改 `package.json` 的 `scripts` 部分，来添加一个 `start` script：
+So let's test what the current experience is like using a simple server. Let's use the [http-server](https://www.npmjs.com/package/http-server) package: `npm install http-server --save-dev`. We'll also amend the `scripts` section of our `package.json` to add in a `start` script:
 
 __package.json__
 
@@ -36,29 +36,29 @@ __package.json__
 }
 ```
 
-注意：默认情况下，[webpack DevServer](/configuration/dev-server/) 会写入到内存。我们需要启用 [writeToDisk](/configuration/dev-server#devserverwritetodisk-) 选项，来让 http-server 处理 `./dist` 目录中的文件。
+Note: [webpack DevServer](/configuration/dev-server/) writes in-memory by default. We'll need to enable [writeToDisk](/configuration/dev-server/#devserverwritetodisk-) option in order for http-server to be able to serve files from `./dist` directory.
 
-如果你之前没有操作过，先得运行命令 `npm run build` 来构建你的项目。然后运行命令 `npm start`。应该产生以下输出：
+If you haven't previously done so, run the command `npm run build` to build your project. Then run the command `npm start`. This should produce the following output:
 
 ``` bash
 > http-server dist
 
-启动 http-server，serve 整个 dist 文件夹
-到：
+Starting up http-server, serving dist
+Available on:
   http://xx.x.x.x:8080
   http://127.0.0.1:8080
   http://xxx.xxx.x.x:8080
-按下 CTRL-C 停止服务
+Hit CTRL-C to stop the server
 ```
 
-如果你打开浏览器访问 `http://localhost:8080` (即 `http://127.0.0.1`)，你应该会看到 webpack 应用程序被 serve 到 `dist` 目录。如果停止 server 然后刷新，则 webpack 应用程序不再可访问。
+If you open your browser to `http://localhost:8080` (i.e. `http://127.0.0.1`) you should see your webpack application being served from the `dist` directory. If you stop the server and refresh, the webpack application is no longer available.
 
-这就是我们为实现离线体验所需要的改变。在本章结束时，我们应该要实现的是，停止 server 然后刷新，仍然可以看到应用程序正常运行。
+This is what we aim to change. Once we reach the end of this module we should be able to stop the server, hit refresh and still see our application.
 
 
-## 添加 Workbox
+## Adding Workbox
 
-添加 workbox-webpack-plugin 插件，然后调整 `webpack.config.js` 文件：
+Let's add the Workbox webpack plugin and adjust the `webpack.config.js` file:
 
 ``` bash
 npm install workbox-webpack-plugin --save-dev
@@ -75,31 +75,30 @@ __webpack.config.js__
   module.exports = {
     entry: {
       app: './src/index.js',
-      print: './src/print.js'
+      print: './src/print.js',
     },
     plugins: [
-      // 对于 CleanWebpackPlugin 的 v2 versions 以下版本，使用 new CleanWebpackPlugin(['dist/*'])
+      // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
--       title: '管理输出'
-+       title: '渐进式网络应用程序'
--     })
-+     }),
+-       title: 'Output Management',
++       title: 'Progressive Web Application',
+      }),
 +     new WorkboxPlugin.GenerateSW({
-+       // 这些选项帮助快速启用 ServiceWorkers
-+       // 不允许遗留任何“旧的” ServiceWorkers
++       // these options encourage the ServiceWorkers to get in there fast
++       // and not allow any straggling "old" SWs to hang around
 +       clientsClaim: true,
-+       skipWaiting: true
-+     })
++       skipWaiting: true,
++     }),
     ],
     output: {
       filename: '[name].bundle.js',
-      path: path.resolve(__dirname, 'dist')
-    }
+      path: path.resolve(__dirname, 'dist'),
+    },
   };
 ```
 
-完成这些设置，再次执行 `npm run build`，看下会发生什么：
+With that in place, let's see what happens when we do an `npm run build`:
 
 ``` bash
 ...
@@ -112,14 +111,14 @@ precache-manifest.b5ca1c555e832d6fbf9462efd29d27eb.js  268 bytes          [emitt
 ...
 ```
 
-现在你可以看到，生成了两个额外的文件：`service-worker.js` 和名称冗长的 `precache-manifest.b5ca1c555e832d6fbf9462efd29d27eb.js`。`service-worker.js` 是 Service Worker 文件，`precache-manifest.b5ca1c555e832d6fbf9462efd29d27eb.js` 是 `service-worker.js` 引用的文件，所以它也可以运行。你本地生成的文件可能会有所不同；但是应该会有一个 `service-worker.js` 文件。
+As you can see, we now have 2 extra files being generated; `service-worker.js` and the more verbose `precache-manifest.b5ca1c555e832d6fbf9462efd29d27eb.js`. `service-worker.js` is the Service Worker file and `precache-manifest.b5ca1c555e832d6fbf9462efd29d27eb.js` is a file that `service-worker.js` requires so it can run. Your own generated files will likely be different; but you should have an `service-worker.js` file there.
 
-所以，值得高兴的是，我们现在已经创建出一个 Service Worker。接下来该做什么？
+So we're now at the happy point of having produced a Service Worker. What's next?
 
 
-## 注册 Service Worker
+## Registering Our Service Worker
 
-接下来我们注册 Service Worker，使其出场并开始表演。通过添加以下注册代码来完成此操作：
+Let's allow our Service Worker to come out and play by registering it. We'll do that by adding the registration code below:
 
 __index.js__
 
@@ -138,15 +137,15 @@ __index.js__
 + }
 ```
 
-再次运行 `npm run build` 来构建包含注册代码版本的应用程序。然后用 `npm start` 启动服务。访问 `http://localhost:8080` 并查看 console 控制台。在那里你应该看到：
+Once more `npm run build` to build a version of the app including the registration code. Then serve it with `npm start`. Navigate to `http://localhost:8080` and take a look at the console. Somewhere in there you should see:
 
 ``` bash
 SW registered
 ```
 
-现在来进行测试。停止 server 并刷新页面。如果浏览器能够支持 Service Worker，应该可以看到你的应用程序还在正常运行。然而，server 已经__停止__ serve 整个 dist 文件夹，此刻是 Service Worker 在进行 serve。
+Now to test it. Stop your server and refresh your page. If your browser supports Service Workers then you should still be looking at your application. However, it has been served up by your Service Worker and __not__ by the server.
 
 
-## 结论
+## Conclusion
 
-你已经使用 Workbox 项目构建了一个离线应用程序。开始进入将 web app 改造为 PWA 的旅程。你现在可能想要考虑下一步做什么。这里谷歌提供的 [PWA](https://developers.google.com/web/progressive-web-apps/) 文档中可以找到一些不错的资源。
+You have built an offline app using the Workbox project. You've started the journey of turning your web app into a PWA. You may now want to think about taking things further. A good resource to help you with that can be found [here](https://developers.google.com/web/progressive-web-apps/).

@@ -1,6 +1,6 @@
 ---
-title: 其它选项(other options)
-sort: 16
+title: Other Options
+sort: 20
 contributors:
   - sokra
   - skipjack
@@ -8,22 +8,26 @@ contributors:
   - byzyk
   - liorgreenb
   - vansosnin
+  - EugeneHlushko
+  - skovy
+  - rishabh3112
+  - Neob91
 related:
   - title: Using Records
     url: https://survivejs.com/webpack/optimizing/separating-manifest/#using-records
 ---
 
 
-这里是 webpack 支持的其它选项。
+These are the remaining configuration options supported by webpack.
 
-W> 寻求帮助：这个页面还在更新中，如果你发现本页面内有描述不准确或者不完整，请在 [webpack 的文档仓库](https://github.com/webpack/webpack.js.org)中创建 issue 或者 pull request
+W> Help Wanted: This page is still a work in progress. If you are familiar with any of the options for which the description or examples are incomplete, please create an issue and submit a PR at the [docs repo](https://github.com/webpack/webpack.js.org)!
 
 
 ## `amd`
 
-`object`
+`object` `boolean: false`
 
-设置 `require.amd` 或 `define.amd` 的值：
+Set the value of `require.amd` or `define.amd`. Setting `amd` to `false` will disable webpack's AMD support.
 
 __webpack.config.js__
 
@@ -36,19 +40,20 @@ module.exports = {
 };
 ```
 
-某些流行的模块是按照 AMD 规范编写的，最引人瞩目的 jQuery 版本在 1.7.0 到 1.9.1，如果 loader 提示它对页面包含的多个版本采取了[特殊许可](https://github.com/amdjs/amdjs-api/wiki/jQuery-and-AMD)时，才会注册为 AMD 模块。
+Certain popular modules written for AMD, most notably jQuery versions 1.7.0 to 1.9.1, will only register as an AMD module if the loader indicates it has taken [special allowances](https://github.com/amdjs/amdjs-api/wiki/jQuery-and-AMD) for multiple versions being included on a page.
 
-许可权限是具有「限制指定版本注册」或「支持有不同定义模块的不同沙盒」的能力。
+The allowances were the ability to restrict registrations to a specific version or to support different sandboxes with different defined modules.
 
-此选项允许将模块查找的键(key)设置为真值(truthy value)。
-发生这种情况时，webpack 中的 AMD 支持将忽略定义的名称。
+This option allows you to set the key your module looks for to a truthy value.
+As it happens, the AMD support in webpack ignores the defined name anyways.
+
 
 
 ## `bail`
 
-`boolean`
+`boolean = false`
 
-在第一个错误出现时抛出失败结果，而不是容忍它。默认情况下，当使用 HMR 时，webpack 会将在终端以及浏览器控制台中，以红色文字记录这些错误，但仍然继续进行打包。要启用它：
+Fail out on the first error instead of tolerating it. By default webpack will log these errors in red in the terminal, as well as the browser console when using HMR, but continue bundling. To enable it:
 
 __webpack.config.js__
 
@@ -59,14 +64,14 @@ module.exports = {
 };
 ```
 
-这将迫使 webpack 退出其打包过程。
+This will force webpack to exit its bundling process.
 
 
 ## `cache`
 
 `boolean` `object`
 
-缓存生成的 webpack 模块和 chunk，来改善构建速度。缓存默认在观察模式(watch mode)启用。禁用缓存只需简单传入：
+Cache the generated webpack modules and chunks to improve build speed. `cache` is set to `type: 'memory'` in [`development` mode](/configuration/mode/#mode-development) and disabled in [`production` mode](/configuration/mode/#mode-production). `cache: true` is an alias to `cache: { type: 'memory' }`. To disable caching pass `false`:
 
 __webpack.config.js__
 
@@ -77,36 +82,206 @@ module.exports = {
 };
 ```
 
-如果传递一个对象，webpack 将使用这个对象进行缓存。保持对此对象的引用，将可以在 compiler 调用之间共享同一缓存：
+
+### `cache.type`
+
+`string: 'memory' | 'filesystem'`
+
+Sets the `cache` type to either in memory or on the file system. The `memory` option is very straightforward, it tells webpack to store cache in memory and doesn't allow additional configuration:
 
 __webpack.config.js__
 
 ```javascript
-let SharedCache = {};
-
 module.exports = {
   //...
-  cache: SharedCache
+  cache: {
+    type: 'memory'
+  }
 };
 ```
 
-W> 不要在不同选项的调用之间共享缓存。
+While setting `cache.type` to `filesystem` opens up more options for configuration.
 
-?> Elaborate on the warning and example - calls with different configuration options?
+### `cache.cacheDirectory`
 
+`string`
+
+Base directory for the cache. Defaults to `node_modules/.cache/webpack`.
+
+`cache.cacheDirectory` option is only available when [`cache.type`](#cachetype) is set to `filesystem`.
+
+__webpack.config.js__
+
+```javascript
+const path = require('path');
+
+module.exports = {
+  //...
+  cache: {
+    type: 'filesystem',
+    cacheDirectory: path.resolve(__dirname, '.temp_cache')
+  }
+};
+```
+
+W> The final location of the cache is a combination of `cache.cacheDirectory` + `cache.name`.
+
+### `cache.cacheLocation`
+
+`string`
+
+Locations for the cache. Defaults to `path.resolve(cache.cacheDirectory, cache.name)`.
+
+__webpack.config.js__
+
+```javascript
+const path = require('path');
+
+module.exports = {
+  //...
+  cache: {
+    type: 'filesystem',
+    cacheLocation: path.resolve(__dirname, '.test_cache')
+  }
+};
+```
+
+### `cache.hashAlgorithm`
+
+`string`
+
+Algorithm used the hash generation. See [Node.js crypto](https://nodejs.org/api/crypto.html) for more details. Defaults to `md4`.
+
+`cache.hashAlgorithm` option is only available when [`cache.type`](#cachetype) is set to `filesystem`.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //...
+  cache: {
+    type: 'filesystem',
+    hashAlgorithm: 'md4'
+  }
+};
+```
+
+### `cache.name`
+
+`string`
+
+Name for the cache. Different names will lead to different coexisting caches. Defaults to `${config.name}-${config.mode}`. Using `cache.name` makes sense when you have multiple configurations which should have independent caches.
+
+`cache.name` option is only available when [`cache.type`](#cachetype) is set to `filesystem`.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //...
+  cache: {
+    type: 'filesystem',
+    name: 'AppBuildCache'
+  }
+};
+```
+
+### `cache.store`
+
+`string = 'pack': 'pack'`
+
+`cache.store` tells webpack when to store data on the file system.
+
+- `'pack'`: Store data when compiler is idle in a single file for all cached items
+
+`cache.store` option is only available when [`cache.type`](#cachetype) is set to `filesystem`.
+
+W> `pack` is the only supported mode since webpack 5.0.x
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //...
+  cache: {
+    type: 'filesystem',
+    store: 'pack'
+  }
+};
+```
+
+### `cache.version`
+
+`string = ''`
+
+Version of the cache data. Different versions won't allow to reuse the cache and override existing content. Update the version when configuration changed in a way which doesn't allow to reuse cache. This will invalidate the cache.
+
+`cache.version` option is only available when [`cache.type`](#cachetype) is set to `filesystem`.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //...
+  cache: {
+    type: 'filesystem',
+    version: 'your_version'
+  }
+};
+```
+
+W> Don't share the cache between calls with different options.
+
+### `cache.idleTimeout`
+
+`number = 10000`
+
+Time in milliseconds. `cache.idleTimeout` denotes the time period after which the cache storing should happen.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //..
+  cache: {
+    idleTimeout: 10000
+  }
+};
+```
+
+W> `cache.idleTimeout` is only available when [`cache.store`](#cachestore) is set to either `'pack'` or `'idle'`
+
+### `cache.idleTimeoutForInitialStore`
+
+`number = 0`
+
+Time in milliseconds. `cache.idleTimeoutForInitialStore` is the time period after which the initial cache storing should happen.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //..
+  cache: {
+    idleTimoutForInitialStore: 0
+  }
+};
+```
+
+W> `cache.idleTimeoutForInitialStore` is only available when [`cache.store`](#cachestore) is set to either `'pack'` or `'idle'`
 
 ## `loader`
 
 `object`
 
-在 loader 上下文中暴露自定义值。
+Expose custom values into the loader context.
 
 ?> Add an example...
 
 
 ## `parallelism`
 
-`number: 100`
+`number = 100`
 
 Limit the number of parallel processed modules. Can be used to fine tune performance or to get more reliable profiling results.
 
@@ -116,9 +291,9 @@ Limit the number of parallel processed modules. Can be used to fine tune perform
 
 `boolean`
 
-捕获一个应用程序"配置文件"，包括统计和提示，然后可以使用 [Analyze](https://webpack.github.io/analyse/) 分析工具进行详细分析。
+Capture a "profile" of the application, including statistics and hints, which can then be dissected using the [Analyze](https://webpack.github.io/analyse/) tool.
 
-T> 使用 [StatsPlugin](https://www.npmjs.com/package/stats-webpack-plugin) 可以更好地控制生成的配置文件。
+T> Use the [StatsPlugin](https://www.npmjs.com/package/stats-webpack-plugin) for more control over the generated profile.
 
 T> Combine with `parallelism: 1` for better results.
 
@@ -127,40 +302,44 @@ T> Combine with `parallelism: 1` for better results.
 
 `string`
 
-开启这个选项可以生成一个 JSON 文件，其中含有 webpack 的 "records" 记录 - 即「用于存储跨多次构建(across multiple builds)的模块标识符」的数据片段。可以使用此文件来跟踪在每次构建之间的模块变化。只要简单的设置一下路径,就可以生成这个 JSON 文件：
+Use this option to generate a JSON file containing webpack "records" -- pieces of data used to store module identifiers across multiple builds. You can use this file to track how modules change between builds. To generate one, simply specify a location:
 
 __webpack.config.js__
 
 ```javascript
+const path = require('path');
+
 module.exports = {
   //...
   recordsPath: path.join(__dirname, 'records.json')
 };
 ```
 
-如果你使用了[代码分离(code splittnig)](/guides/code-splitting)这样的复杂配置，records 会特别有用。这些数据用于确保拆分 bundle，以便实现你需要的[缓存(caching)](/guides/caching)行为。
+Records are particularly useful if you have a complex setup that leverages [Code Splitting](/guides/code-splitting). The data can be used to ensure the split bundles are achieving the [caching](/guides/caching) behavior you need.
 
-T> 注意，虽然这个文件是由编译器(compiler)生成的，但你可能仍然希望在源代码管理中追踪它，以便随时记录它的变化情况。
+T> Note that although this file is generated by the compiler, you may still want to track it in source control to keep a history of how it has changed over time.
 
-W> 设置 `recordsPath` 本质上会把 `recordsInputPath` 和 `recordsOutputPath` 都设置成相同的路径。通常来讲这也是符合逻辑的，除非你决定改变记录文件的名称。可以查看下面的实例：
+W> Setting `recordsPath` will essentially set `recordsInputPath` and `recordsOutputPath` to the same location. This is usually all that's necessary unless you decide to change the name of the file containing the records. See below for an example.
 
 
 ## `recordsInputPath`
 
 `string`
 
-指定读取最后一条记录的文件的名称。这可以用来重命名一个记录文件，可以查看下面的实例：
+Specify the file from which to read the last set of records. This can be used to rename a records file. See the example below.
 
 
 ## `recordsOutputPath`
 
 `string`
 
-指定记录要写入的位置。以下示例描述了如何用这个选项和 `recordsInptuPaht` 来重命名一个记录文件：
+Specify where the records should be written. The following example shows how you might use this option in combination with `recordsInputPath` to rename a records file:
 
 __webpack.config.js__
 
 ```javascript
+const path = require('path');
+
 module.exports = {
   //...
   recordsInputPath: path.join(__dirname, 'records.json'),
@@ -181,5 +360,59 @@ __webpack.config.js__
 module.exports = {
   //...
   name: 'admin-app'
+};
+```
+
+### infrastructureLogging
+
+Options for infrastructure level logging.
+
+`object = {}`
+
+#### infrastructureLogging.level
+
+`string`
+
+Enable infrastructure logging output. Similar to [`stats.logging`](/configuration/stats/#statslogging) option but for infrastructure. No default value is given.
+
+Possible values:
+
+- `'none'` - disable logging
+- `'error'` - errors only
+- `'warn'` - errors and warnings only
+- `'info'` - errors, warnings, and info messages
+- `'log'` - errors, warnings, info messages, log messages, groups, clears. Collapsed groups are displayed in a collapsed state.
+- `'verbose'` - log everything except debug and trace. Collapsed groups are displayed in expanded state.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //...
+  infrastructureLogging: {
+    level: 'info'
+  }
+};
+```
+
+#### infrastructureLogging.debug
+
+`string` `RegExp` `function(name) => boolean` `[string, RegExp, function(name) => boolean]`
+
+Enable debug information of specified loggers such as plugins or loaders. Similar to [`stats.loggingDebug`](/configuration/stats/#stats) option but for infrastructure. No default value is given.
+
+__webpack.config.js__
+
+```javascript
+module.exports = {
+  //...
+  infrastructureLogging: {
+    level: 'info',
+    debug: [
+      'MyPlugin',
+      /MyPlugin/,
+      (name) => name.contains('MyPlugin')
+    ]
+  }
 };
 ```

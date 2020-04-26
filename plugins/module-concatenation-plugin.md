@@ -8,25 +8,25 @@ related:
   - webpack 3: Official Release!!
 ---
 
-过去 webpack 打包时的一个取舍是将 bundle 中各个模块单独打包成闭包。这些打包函数使你的 JavaScript 在浏览器中处理的更慢。相比之下，一些工具像 Closure Compiler 和 RollupJS 可以提升(hoist)或者预编译所有模块到一个闭包中，提升你的代码在浏览器中的执行速度。
+In the past, one of webpack’s trade-offs when bundling was that each module in your bundle would be wrapped in individual function closures. These wrapper functions made it slower for your JavaScript to execute in the browser. In comparison, tools like Closure Compiler and RollupJS ‘hoist’ or concatenate the scope of all your modules into one closure and allow for your code to have a faster execution time in the browser.
 
-这个插件会在 webpack 中实现以上的预编译功能。这个插件仅在生产环境下默认启用。如果你需要在其它模式下开启，可以手动添加：
+This plugin will enable the same concatenation behavior in webpack. By default this plugin is already enabled in [production `mode`](/configuration/mode/#mode-production) and disabled otherwise. If you need to override the production `mode` optimization, set the [`optimization.concatenateModules` option](/configuration/optimization/#optimizationconcatenatemodules) to `false`. To enable concatenation behavior in other modes, you can add `ModuleConcatenationPlugin` manually or use the `optimization.concatenateModules` option:
 
 ```js
 new webpack.optimize.ModuleConcatenationPlugin();
 ```
 
 
-> 这种连结行为被称为“作用域提升(scope hoisting)”。
+> This concatenation behavior is called “scope hoisting.”
 >
-> 由于实现 ECMAScript 模块语法，作用域提升(scope hoisting)这个特定于此语法的功能才成为可能。`webpack` 可能会根据你正在使用的模块类型和[其他的情况](https://medium.com/webpack/webpack-freelancing-log-book-week-5-7-4764be3266f5)，回退到普通打包。
+> Scope hoisting is specifically a feature made possible by ECMAScript Module syntax. Because of this webpack may fallback to normal bundling based on what kind of modules you are using, and [other conditions](https://medium.com/webpack/webpack-freelancing-log-book-week-5-7-4764be3266f5).
 
-W> 记住，此插件仅适用于由 webpack 直接处理的 [ES6 模块](/api/module-methods/#es6-recommended-)。在使用转译器(transpiler)时，你需要禁用对模块的处理（例如 Babel 中的 [`modules`](https://babel.docschina.org/docs/en/babel-preset-es2015/#optionsmodules) 选项）。
+W> Keep in mind that this plugin will only be applied to [ES6 modules](/api/module-methods/#es6-recommended) processed directly by webpack. When using a transpiler, you'll need to disable module processing (e.g. the [`modules`](https://babeljs.io/docs/en/babel-preset-env#modules) option in Babel).
 
 
-## 绑定失败的优化[Optimization Bailouts]
+## Optimization Bailouts
 
-像文章中解释的，webpack 试图达到分批的作用域提升(scope hoisting)。它会将一些模块绑定到一个作用域内，但并不是任何情况下都会这么做。如果 webpack 不能绑定模块，将会有两个选择 Prevent 和 Root，Prevent 意思是模块必须在自己的作用域内。 Root 意味着将创建一个新的模块组。以下条件决定了输出结果：
+As the article explains, webpack attempts to achieve partial scope hoisting. It will merge modules into a single scope but cannot do so in every case. If webpack cannot merge a module, the two alternatives are Prevent and Root. Prevent means the module must be in its own scope. Root means a new module group will be created. The following conditions determine the outcome:
 
 Condition                                     | Outcome
 --------------------------------------------- | --------
@@ -42,9 +42,9 @@ In Multiple Chunks                            | Prevent
 `export * from "cjs-module"`                  | Prevent
 
 
-### 模块分组算法[Module Grouping Algorithm]
+### Module Grouping Algorithm
 
-以下 JavaScript 伪代码解释了算法：
+The following pseudo JavaScript explains the algorithm:
 
 ```js
 modules.forEach(module => {
@@ -87,9 +87,9 @@ function tryToAdd(group, module) {
 ```
 
 
-### 优化绑定失败的调试[Debugging Optimization Bailouts]
+### Debugging Optimization Bailouts
 
-当我们使用 webpack CLI 时，加上参数 `--display-optimization-bailout` 将显示绑定失败的原因。在 webpack 配置里，只需将以下内容添加到 stats 对象中：
+When using the webpack CLI, the `--display-optimization-bailout` flag will display bailout reasons. When using the webpack config, just add the following to the `stats` object:
 
 ```js
 module.exports = {

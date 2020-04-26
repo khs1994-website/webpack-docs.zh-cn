@@ -1,5 +1,5 @@
 ---
-title: 入口和上下文(entry and context)
+title: Entry and Context
 sort: 4
 contributors:
   - sokra
@@ -7,38 +7,42 @@ contributors:
   - tarang9211
   - byzyk
   - madhavarshney
+  - EugeneHlushko
+  - smelukov
 ---
 
-entry 对象是用于 webpack 查找启动并构建 bundle。其上下文是入口文件所处的目录的绝对路径的字符串。
+The entry object is where webpack looks to start building the bundle. The context is an absolute string to the directory that contains the entry files.
 
 
 ## `context`
 
 `string`
 
-基础目录，__绝对路径__，用于从配置中解析入口起点(entry point)和 loader
+The base directory, an __absolute path__, for resolving entry points and loaders from configuration.
 
 ``` js
+const path = require('path');
+
 module.exports = {
   //...
   context: path.resolve(__dirname, 'app')
 };
 ```
 
-默认使用当前目录，但是推荐在配置中传递一个值。这使得你的配置独立于 CWD(current working directory - 当前执行路径)。
+By default the current directory is used, but it's recommended to pass a value in your configuration. This makes your configuration independent from CWD (current working directory).
 
 ---
 
 
 ## `entry`
 
-`string | [string] | object { <key>: string | [string] } | (function: () => string | [string] | object { <key>: string | [string] })`
+`string` `[string]` `object = { <key> string | [string] | object = { import string | [string], dependOn string | [string], filename string }}` `(function() => string | [string] | object = { <key> string | [string] } | object = { import string | [string], dependOn string | [string], filename string })`
 
-开始应用程序打包过程的一个或多个起点。如果传递数组，则会处理所有条目。
+The point or points where to start the application bundling process. If an array is passed then all items will be processed.
 
-动态加载的模块__不是__入口起点。
+A dynamically loaded module is __not__ an entry point.
 
-简单规则：每个 HTML 页面都有一个入口起点。单页应用(SPA)：一个入口起点，多页应用(MPA)：多个入口起点。
+Simple rule: one entry point per HTML page. SPA: one entry point, MPA: multiple entry points.
 
 ```js
 module.exports = {
@@ -52,12 +56,73 @@ module.exports = {
 ```
 
 
-### 命名
+### Naming
 
-如果传入一个字符串或字符串数组，chunk 会被命名为 `main`。如果传入一个对象，则每个键(key)会是 chunk 的名称，该值描述了 chunk 的入口起点。
+If a string or array of strings is passed, the chunk is named `main`. If an object is passed, each key is the name of a chunk, and the value describes the entry point for the chunk.
+
+### Entry descriptor
+
+If an object is passed the value might be a string, array of strings or a descriptor:
+
+```js
+module.exports = {
+  //...
+  entry: {
+    home: './home.js',
+    shared: ['react', 'react-dom', 'redux', 'react-redux'],
+    catalog: {
+      import: './catalog.js',
+      filename: 'pages/catalog.js',
+      dependOn:'shared'
+    },
+    personal: {
+      import: './personal.js',
+      filename: 'pages/personal.js',
+      dependOn:'shared'
+    }
+  }
+};
+```
+
+Descriptor syntax might be used to pass additional options to an entry point.
 
 
-### 动态入口
+### Output filename
+
+By default, the output filename for the entry chunk is extracted from [`output.filename`](/configuration/output/#outputfilename) but you can specify a custom output filename for a specific entry:
+
+```js
+module.exports = {
+  //...
+  entry: {
+    app: './app.js',
+    home: { import: './contact.js', filename: 'pages/[name][ext]' },
+    about: { import: './about.js', filename: 'pages/[name][ext]' }
+  }
+};
+```
+
+Descriptor syntax was used here to pass `filename`-option to the specific entry points.
+
+
+### Dependencies
+
+By default, every entry chunk stores all the modules that it uses. With `dependOn`-option you can share the modules from one entry chunk to another:
+
+```js
+module.exports = {
+  //...
+  entry: {
+    app: { import: './app.js', dependOn: 'react-vendors' },
+    'react-vendors': ['react', 'react-dom', 'prop-types']
+  }
+};
+```
+
+The `app` chunk will not contain the modules that `react-vendors` has.
+
+
+### Dynamic entry
 
 If a function is passed then it will be invoked on every [make](/api/compiler-hooks/#make) event.
 
@@ -70,7 +135,7 @@ module.exports = {
 };
 ```
 
-或
+or
 
 ```js
 module.exports = {
@@ -91,4 +156,4 @@ module.exports = {
 };
 ```
 
-当结合 [`output.library`](/configuration/output#outputlibrary) 选项时：如果传入数组，则只导出最后一项。
+When combining with the [`output.library`](/configuration/output/#outputlibrary) option: If an array is passed only the last item is exported.

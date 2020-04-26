@@ -1,6 +1,6 @@
 ---
-title: 解析(resolve)
-sort: 7
+title: Resolve
+sort: 8
 contributors:
   - sokra
   - skipjack
@@ -12,16 +12,19 @@ contributors:
   - numb86
   - jgravois
   - EugeneHlushko
+  - Aghassi
+  - myshov
+  - anikethsaha
 ---
 
-这些选项能设置模块如何被解析。webpack 提供合理的默认值，但是还是可能会修改一些解析的细节。关于 resolver 具体如何工作的更多解释说明，请查看[模块解析](/concepts/module-resolution)。
+These options change how modules are resolved. webpack provides reasonable defaults, but it is possible to change the resolving in detail. Have a look at [Module Resolution](/concepts/module-resolution) for more explanation of how the resolver works.
 
 
 ## `resolve`
 
 `object`
 
-配置模块如何解析。例如，当在 ES2015 中调用 `import 'lodash'`，`resolve` 选项能够对 webpack 查找 `'lodash'` 的方式去做修改（查看[`模块`](#resolve-modules)）。
+Configure how modules are resolved. For example, when calling `import 'lodash'` in ES2015, the `resolve` options can change where webpack goes to look for `'lodash'` (see [`modules`](#resolvemodules)).
 
 __webpack.config.js__
 
@@ -39,11 +42,13 @@ module.exports = {
 
 `object`
 
-创建 `import` 或 `require` 的别名，来确保模块引入变得更简单。例如，一些位于 `src/` 文件夹下的常用模块：
+Create aliases to `import` or `require` certain modules more easily. For example, to alias a bunch of commonly used `src/` folders:
 
 __webpack.config.js__
 
 ```js
+const path = require('path');
+
 module.exports = {
   //...
   resolve: {
@@ -55,23 +60,25 @@ module.exports = {
 };
 ```
 
-现在，替换「在导入时使用相对路径」这种方式，就像这样：
+Now, instead of using relative paths when importing like so:
 
 ```js
 import Utility from '../../utilities/utility';
 ```
 
-你可以这样使用别名：
+you can use the alias:
 
 ```js
 import Utility from 'Utilities/utility';
 ```
 
-也可以在给定对象的键后的末尾添加 `$`，以表示精准匹配：
+A trailing `$` can also be added to the given object's keys to signify an exact match:
 
 __webpack.config.js__
 
 ```js
+const path = require('path');
+
 module.exports = {
   //...
   resolve: {
@@ -82,20 +89,20 @@ module.exports = {
 };
 ```
 
-这将产生以下结果：
+which would yield these results:
 
 ```js
-import Test1 from 'xyz'; // 精确匹配，所以 path/to/file.js 被解析和导入
-import Test2 from 'xyz/file.js'; // 非精确匹配，触发普通解析
+import Test1 from 'xyz'; // Exact match, so path/to/file.js is resolved and imported
+import Test2 from 'xyz/file.js'; // Not an exact match, normal resolution takes place
 ```
 
-下面的表格展示了一些其他情况：
+The following table explains other cases:
 
-| `别名：`                            | `import 'xyz'`                        | `import 'xyz/file.js'`              |
+| `alias:`                            | `import 'xyz'`                        | `import 'xyz/file.js'`              |
 | ----------------------------------- | ------------------------------------- | ----------------------------------- |
 | `{}`                                | `/abc/node_modules/xyz/index.js`      | `/abc/node_modules/xyz/file.js`     |
-| `{ xyz: '/abs/path/to/file.js' }`   | `/abs/path/to/file.js`                | error                               |
-| `{ xyz$: '/abs/path/to/file.js' }`  | `/abs/path/to/file.js`                | `/abc/node_modules/xyz/file.js`     |
+| `{ xyz: '/abc/path/to/file.js' }`   | `/abc/path/to/file.js`                | error                               |
+| `{ xyz$: '/abc/path/to/file.js' }`  | `/abc/path/to/file.js`                | `/abc/node_modules/xyz/file.js`     |
 | `{ xyz: './dir/file.js' }`          | `/abc/dir/file.js`                    | error                               |
 | `{ xyz$: './dir/file.js' }`         | `/abc/dir/file.js`                    | `/abc/node_modules/xyz/file.js`     |
 | `{ xyz: '/some/dir' }`              | `/some/dir/index.js`                  | `/some/dir/file.js`                 |
@@ -104,20 +111,22 @@ import Test2 from 'xyz/file.js'; // 非精确匹配，触发普通解析
 | `{ xyz: 'modu' }`                   | `/abc/node_modules/modu/index.js`     | `/abc/node_modules/modu/file.js`    |
 | `{ xyz$: 'modu' }`                  | `/abc/node_modules/modu/index.js`     | `/abc/node_modules/xyz/file.js`     |
 | `{ xyz: 'modu/some/file.js' }`      | `/abc/node_modules/modu/some/file.js` | error                               |
-| `{ xyz: 'modu/dir' }`               | `/abc/node_modules/modu/dir/index.js` | `/abc/node_modules/dir/file.js`     |
-| `{ xyz: 'xyz/dir' }`                | `/abc/node_modules/xyz/dir/index.js`  | `/abc/node_modules/xyz/dir/file.js` |
-| `{ xyz$: 'xyz/dir' }`               | `/abc/node_modules/xyz/dir/index.js`  | `/abc/node_modules/xyz/file.js`     |
+| `{ xyz: 'modu/dir' }`               | `/abc/node_modules/modu/dir/index.js` | `/abc/node_modules/modu/dir/file.js`|
+| `{ xyz$: 'modu/dir' }`              | `/abc/node_modules/modu/dir/index.js` | `/abc/node_modules/xyz/file.js`     |
 
-如果在 `package.json` 中定义，`index.js` 可能会被解析为另一个文件。
+`index.js` may resolve to another file if defined in the `package.json`.
 
-`/abc/node_modules` 也可能在 `/node_modules` 中解析。
+`/abc/node_modules` may resolve in `/node_modules` too.
 
+W> `resolve.alias` takes precedence over other module resolutions.
+
+W> [`null-loader`](https://github.com/webpack-contrib/null-loader) will be deprecated in `webpack@5`. use `alias: { xyz$: false }` or absolute path `alias: {[path.resolve(__dirname, "....")]: false }`
 
 ### `resolve.aliasFields`
 
 `[string]: ['browser']`
 
-指定一个字段，例如 `browser`，根据[此规范](https://github.com/defunctzombie/package-browser-field-spec)进行解析。默认：
+Specify a field, such as `browser`, to be parsed according to [this specification](https://github.com/defunctzombie/package-browser-field-spec).
 
 __webpack.config.js__
 
@@ -133,16 +142,16 @@ module.exports = {
 
 ### `resolve.cacheWithContext`
 
-`boolean`（从 webpack 3.1.0 开始）
+`boolean` (since webpack 3.1.0)
 
-如果启用了不安全缓存，请在缓存键(cache key)中引入 `request.context`。这个选项被 [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve/) 模块考虑在内。从 webpack 3.1.0 开始，在配置了 resolve 或 resolveLoader 插件时，解析缓存(resolve caching)中的上下文(context)会被忽略。这解决了性能衰退的问题。
+If unsafe cache is enabled, includes `request.context` in the cache key. This option is taken into account by the [`enhanced-resolve`](https://github.com/webpack/enhanced-resolve/) module. Since webpack 3.1.0 context in resolve caching is ignored when resolve or resolveLoader plugins are provided. This addresses a performance regression.
 
 
 ### `resolve.descriptionFiles`
 
-`[string]: ['package.json']`
+`[string] = ['package.json']`
 
-用于描述的 JSON 文件。默认：
+The JSON files to use for descriptions.
 
 __webpack.config.js__
 
@@ -158,9 +167,9 @@ module.exports = {
 
 ### `resolve.enforceExtension`
 
-`boolean: false`
+`boolean = false`
 
-如果是 `true`，将不允许无扩展名(extension-less)文件。默认如果 `./foo` 有 `.js` 扩展，`require('./foo')` 可以正常运行。但如果启用此选项，只有 `require('./foo.js')` 能够正常工作。默认：
+If `true`, it will not allow extension-less files. So by default `require('./foo')` works if `./foo` has a `.js` extension, but with this enabled only `require('./foo.js')` will work.
 
 __webpack.config.js__
 
@@ -176,9 +185,11 @@ module.exports = {
 
 ### `resolve.enforceModuleExtension`
 
-`boolean: false`
+`boolean = false`
 
-对模块是否需要使用的扩展（例如 loader）。默认：
+W> Removed in webpack 5
+
+Tells webpack whether to require to use an extension for modules (e.g. loaders).
 
 __webpack.config.js__
 
@@ -194,9 +205,11 @@ module.exports = {
 
 ### `resolve.extensions`
 
-`[string]: ['.wasm', '.mjs', '.js', '.json']`
+`[string] = ['.wasm', '.mjs', '.js', '.json']`
 
-自动解析确定的扩展。默认值为：
+Attempt to resolve these extensions in order.
+
+W> If multiple files share the same name but have different extensions, webpack will resolve the one with the extension listed first in the array and skip the rest.
 
 __webpack.config.js__
 
@@ -209,22 +222,22 @@ module.exports = {
 };
 ```
 
-能够使用户在引入模块时不带扩展：
+which is what enables users to leave off the extension when importing:
 
 ```js
 import File from '../path/to/file';
 ```
 
-W> 使用此选项，会__覆盖默认数组__，这就意味着 webpack 将不再尝试使用默认扩展来解析模块。对于使用其扩展导入的模块，例如，`import SomeFile from "./somefile.ext"`，要想正确的解析，一个包含“\*”的字符串必须包含在数组中。
+W> Using this will __override the default array__, meaning that webpack will no longer try to resolve modules using the default extensions.
 
 
 ### `resolve.mainFields`
 
 `[string]`
 
-当从 npm 包中导入模块时（例如，`import * as D3 from 'd3'`），此选项将决定在 `package.json` 中使用哪个字段导入模块。根据 webpack 配置中指定的 [`target`](/concepts/targets) 不同，默认值也会有所不同。
+When importing from an npm package, e.g. `import * as D3 from 'd3'`, this option will determine which fields in its `package.json` are checked. The default values will vary based upon the [`target`](/concepts/targets) specified in your webpack configuration.
 
-当 `target` 属性设置为 `webworker`, `web` 或者没有指定，默认值为：
+When the `target` property is set to `webworker`, `web`, or left unspecified:
 
 __webpack.config.js__
 
@@ -237,7 +250,7 @@ module.exports = {
 };
 ```
 
-对于其他任意的 target（包括 `node`），默认值为：
+For any other target (including `node`):
 
 __webpack.config.js__
 
@@ -250,7 +263,7 @@ module.exports = {
 };
 ```
 
-例如，考虑任意一个名为 `upstream` 的 library，其 `package.json` 包含以下字段：
+For example, consider an arbitrary library called `upstream` with a `package.json` that contains the following fields:
 
 ```json
 {
@@ -259,14 +272,14 @@ module.exports = {
 }
 ```
 
-在我们 `import * as Upstream from 'upstream'` 时，这实际上会从 `browser` 属性解析文件。在这里 `browser` 属性是最优先选择的，因为它是 `mainFields` 的第一项。同时，由 webpack 打包的 Node.js 应用程序首先会尝试从 `module` 字段中解析文件。
+When we `import * as Upstream from 'upstream'` this will actually resolve to the file in the `browser` property. The `browser` property takes precedence because it's the first item in `mainFields`. Meanwhile, a Node.js application bundled by webpack will first try to resolve using the file in the `module` field.
 
 
 ### `resolve.mainFiles`
 
-`[string]: ['index']`
+`[string] = ['index']`
 
-解析目录时要使用的文件名。
+The filename to be used while resolving directories.
 
 __webpack.config.js__
 
@@ -282,15 +295,15 @@ module.exports = {
 
 ### `resolve.modules`
 
-`[string]: ['node_modules']`
+`[string] = ['node_modules']`
 
-告诉 webpack 解析模块时应该搜索的目录。
+Tell webpack what directories should be searched when resolving modules.
 
-绝对路径和相对路径都能使用，但是要知道它们之间有一点差异。
+Absolute and relative paths can both be used, but be aware that they will behave a bit differently.
 
-通过查看当前目录以及祖先路径（即 `./node_modules`, `../node_modules` 等等），相对路径将类似于 Node 查找 'node_modules' 的方式进行查找。
+A relative path will be scanned similarly to how Node scans for `node_modules`, by looking through the current directory as well as its ancestors (i.e. `./node_modules`, `../node_modules`, and on).
 
-使用绝对路径，将只在给定目录中搜索。
+With an absolute path, it will only search in the given directory.
 
 __webpack.config.js__
 
@@ -303,11 +316,13 @@ module.exports = {
 };
 ```
 
-如果你想要添加一个目录到模块搜索目录，此目录优先于 `node_modules/` 搜索：
+If you want to add a directory to search in that takes precedence over `node_modules/`:
 
 __webpack.config.js__
 
 ```js
+const path = require('path');
+
 module.exports = {
   //...
   resolve: {
@@ -319,9 +334,9 @@ module.exports = {
 
 ### `resolve.unsafeCache`
 
-`regex` `array` `boolean: true`
+`RegExp` `[RegExp]` `boolean: true`
 
-启用，会主动缓存模块，但并__不安全__。传递 `true` 将缓存一切。默认：
+Enable aggressive, but __unsafe__, caching of modules. Passing `true` will cache everything.
 
 __webpack.config.js__
 
@@ -334,7 +349,7 @@ module.exports = {
 };
 ```
 
-正则表达式，或正则表达式数组，可以用于匹配文件路径或只缓存某些模块。例如，只缓存 utilities 模块：
+A regular expression, or an array of regular expressions, can be used to test file paths and only cache certain modules. For example, to only cache utilities:
 
 __webpack.config.js__
 
@@ -347,14 +362,14 @@ module.exports = {
 };
 ```
 
-W> 修改缓存路径可能在极少数情况下导致失败。
+W> Changes to cached paths may cause failure in rare cases.
 
 
 ### `resolve.plugins`
 
 [`[Plugin]`](/plugins/)
 
-应该使用的额外的解析插件列表。它允许插件，如 [`DirectoryNamedWebpackPlugin`](https://www.npmjs.com/package/directory-named-webpack-plugin)。
+A list of additional resolve plugins which should be applied. It allows plugins such as [`DirectoryNamedWebpackPlugin`](https://www.npmjs.com/package/directory-named-webpack-plugin).
 
 __webpack.config.js__
 
@@ -372,11 +387,11 @@ module.exports = {
 
 ### `resolve.symlinks`
 
-`boolean: true`
+`boolean = true`
 
-是否将符号链接(symlink)解析到它们的符号链接位置(symlink location)。
+Whether to resolve symlinks to their symlinked location.
 
-启用时，符号链接(symlink)的资源，将解析为其 _真实_ 路径，而不是其符号链接(symlink)的位置。注意，当使用创建符号链接包的工具（如 `npm link`）时，这种方式可能会导致模块解析失败。
+When enabled, symlinked resources are resolved to their _real_ path, not their symlinked location. Note that this may cause module resolution to fail when using tools that symlink packages (like `npm link`).
 
 __webpack.config.js__
 
@@ -392,9 +407,9 @@ module.exports = {
 
 ### `resolve.cachePredicate`
 
-`function: function (module) { return true; }`
+`function(module) => boolean`
 
-决定请求是否应该被缓存的函数。函数传入一个带有 `path` 和 `request` 属性的对象。必须返回一个 boolean 值。
+A function which decides whether a request should be cached or not. An object is passed to the function with `path` and `request` properties. It must return a boolean.
 
 __webpack.config.js__
 
@@ -413,9 +428,9 @@ module.exports = {
 
 ## `resolveLoader`
 
-`object`
+`object { modules [string] = ['node_modules'], extensions [string] = ['.js', '.json'], mainFields [string] = ['loader', 'main']}`
 
-这组选项与上面的 `resolve` 对象的属性集合相同，但仅用于解析 webpack 的 [loader](/concepts/loaders) 包。默认：
+This set of options is identical to the `resolve` property set above, but is used only to resolve webpack's [loader](/concepts/loaders) packages.
 
 __webpack.config.js__
 
@@ -430,14 +445,16 @@ module.exports = {
 };
 ```
 
-T> 注意，这里你可以使用别名，并且其他特性类似于 resolve 对象。例如，`{ txt: 'raw-loader' }` 会使用 `raw-loader` 去 shim(填充) `txt!templates/demo.txt`。
+T> Note that you can use alias here and other features familiar from resolve. For example `{ txt: 'raw-loader' }` would shim `txt!templates/demo.txt` to use `raw-loader`.
 
 
-## `resolveLoader.moduleExtensions`
+### `resolveLoader.moduleExtensions`
 
 `[string]`
 
-解析 loader 时，用到扩展名(extensions)/后缀(suffixes)。从 webpack 2 开始，我们 [强烈建议](/migrate/3/#automatic-loader-module-name-extension-removed) 使用全名，例如 `example-loader`，以尽可能清晰。然而，如果你确实想省略 `-loader`，也就是说只使用 `example`，则可以使用此选项来实现：
+W> Removed in webpack 5
+
+The extensions/suffixes that are used when resolving loaders. Since version two, we [strongly recommend](/migrate/3/#automatic--loader-module-name-extension-removed) using the full name, e.g. `example-loader`, as much as possible for clarity. However, if you really wanted to exclude the `-loader` bit, i.e. just use `example`, you can use this option to do so:
 
 __webpack.config.js__
 

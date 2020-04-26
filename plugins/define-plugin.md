@@ -9,7 +9,7 @@ contributors:
 ---
 
 
-`DefinePlugin` 允许创建一个在__编译__时可以配置的全局常量。这可能会对开发模式和生产模式的构建允许不同的行为非常有用。如果在开发构建中，而不在发布构建中执行日志记录，则可以使用全局常量来决定是否记录日志。这就是 `DefinePlugin` 的用处，设置它，就可以忘记开发环境和生产环境构建的规则。
+The `DefinePlugin` allows you to create global constants which can be configured at __compile__ time. This can be useful for allowing different behavior between development builds and production builds. If you perform logging in your development build but not in the production build you might use a global constant to determine whether logging takes place. That's where `DefinePlugin` shines, set it and forget it rules for development and production builds.
 
 ``` javascript
 new webpack.DefinePlugin({
@@ -18,16 +18,16 @@ new webpack.DefinePlugin({
 ```
 
 
-## 用法
+## Usage
 
-每个传进 `DefinePlugin` 的键值都是一个标志符或者多个用 `.` 连接起来的标志符。
+Each key passed into `DefinePlugin` is an identifier or multiple identifiers joined with `.`.
 
-- 如果这个值是一个字符串，它会被当作一个代码片段来使用。
-- 如果这个值不是字符串，它会被转化为字符串(包括函数)。
-- 如果这个值是一个对象，它所有的 key 会被同样的方式定义。
-- 如果在一个 key 前面加了 `typeof`,它会被定义为 typeof 调用。
+- If the value is a string it will be used as a code fragment.
+- If the value isn't a string, it will be stringified (including functions).
+- If the value is an object all keys are defined the same way.
+- If you prefix `typeof` to the key, it's only defined for typeof calls.
 
-这些值会被内联进那些允许传一个代码压缩参数的代码中，从而减少冗余的条件判断。
+The values will be inlined into the code allowing a minification pass to remove the redundant conditional.
 
 ``` javascript
 new webpack.DefinePlugin({
@@ -48,7 +48,7 @@ if(!BROWSER_SUPPORTS_HTML5) require('html5shiv');
 
 W> When defining values for `process` prefer `'process.env.NODE_ENV': JSON.stringify('production')` over `process: { env: { NODE_ENV: JSON.stringify('production') } }`. Using the latter will overwrite the `process` object which can break compatibility with some modules that expect other values on the process object to be defined.
 
-T> 注意，因为这个插件直接执行文本替换，给定的值必须包含字符串本身内的__实际引号__。通常，有两种方式来达到这个效果，使用 `'"production"'`, 或者使用 `JSON.stringify('production')`。
+T> Note that because the plugin does a direct text replacement, the value given to it must include __actual quotes__ inside of the string itself. Typically, this is done either with alternate quotes, such as `'"production"'`, or by using `JSON.stringify('production')`.
 
 __index.js__
 
@@ -62,7 +62,7 @@ if (PRODUCTION) {
 }
 ```
 
-通过没有使用压缩的 webpack 的结果：
+After passing through webpack with no minification results in:
 
 ``` javascript
 if (!true) {
@@ -73,16 +73,16 @@ if (true) {
 }
 ```
 
-通过使用压缩的 webpack 的结果:
+and then after a minification pass results in:
 
 ``` javascript
 console.log('Production log');
 ```
 
 
-## 功能标记(Feature Flags)
+## Feature Flags
 
-使用[功能标记](https://en.wikipedia.org/wiki/Feature_toggle)来「启用/禁用」「生产/开发」构建中的功能。
+Enable/disable features in production/development build using [feature flags](https://en.wikipedia.org/wiki/Feature_toggle).
 
 ```javascript
 new webpack.DefinePlugin({
@@ -92,12 +92,12 @@ new webpack.DefinePlugin({
 ```
 
 
-## 服务 URL(Service URL)
+## Service URLs
 
-在生产/开发构建中使用不同的服务 URL(Service URL)：
+Use a different service URL in production/development builds:
 
 ```javascript
 new webpack.DefinePlugin({
-  'SERVICE_URL': JSON.stringify('http://dev.example.com')
+  'SERVICE_URL': JSON.stringify('https://dev.example.com')
 });
 ```

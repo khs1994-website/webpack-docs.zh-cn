@@ -5,9 +5,9 @@ contributors:
   - byzyk
 ---
 
-`NormalModuleReplacementPlugin` 允许你用 `newResource` 替换与 `resourceRegExp` 匹配的资源。如果 `newResource` 是相对路径，它会相对于先前的资源被解析。如果 `newResource` 是函数，它将会覆盖之前被提供资源的请求。
+The `NormalModuleReplacementPlugin` allows you to replace resources that match `resourceRegExp` with `newResource`. If `newResource` is relative, it is resolved relative to the previous resource. If `newResource` is a function, it is expected to overwrite the request attribute of the supplied resource.
 
-这对于允许在构建中的不同行为是有用的。
+This can be useful for allowing different behaviour between builds.
 
 ``` js
 new webpack.NormalModuleReplacementPlugin(
@@ -17,13 +17,13 @@ new webpack.NormalModuleReplacementPlugin(
 ```
 
 
-## 基本示例
+## Basic Example
 
-在构建[开发环境](/guides/production)时替换特定的模块。
+Replace a specific module when building for a [development environment](/guides/production).
 
-假设你有一个配置文件 `some/path/config.development.module.js` 并且在生产环境有一个特殊的版本 `some/path/config.production.module.js`
+Say you have a configuration file `some/path/config.development.module.js` and a special version for production in `some/path/config.production.module.js`
 
-只需在生产构建时添加以下插件：
+Just add the following plugin when building for production:
 
 ``` javascript
 new webpack.NormalModuleReplacementPlugin(
@@ -33,11 +33,11 @@ new webpack.NormalModuleReplacementPlugin(
 ```
 
 
-## 高级示例
+## Advanced Example
 
-根据[指定环境](/configuration/configuration-types)的条件构建。
+Conditional build depending on an [specified environment](/configuration/configuration-types).
 
-假设你想要一个为了不同构建目标的特定值的配置。
+Say you want a configuration with specific values for different build targets.
 
 ``` javascript
 module.exports = function(env) {
@@ -53,7 +53,7 @@ module.exports = function(env) {
 };
 ```
 
-创建两个配置文件：
+Create the two configuration files:
 
 __app/config-VERSION_A.js__
 
@@ -71,16 +71,16 @@ export default {
 };
 ```
 
-然后使用在正则中查找的关键字来引入配置：
+Then import that configuration using the keyword you're looking for in the regexp:
 
 ``` javascript
 import config from 'app/config-APP_TARGET';
 console.log(config.title);
 ```
 
-根据你的构建目标，现在你引入了正确的配置。
+And now you just get the right configuration imported depending on which target you're building for:
 
-``` shell
+```bash
 webpack --env.APP_TARGET VERSION_A
 => 'I am version A'
 

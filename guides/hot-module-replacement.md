@@ -1,5 +1,5 @@
 ---
-title: 模块热替换
+title: Hot Module Replacement
 sort: 15
 contributors:
   - jmreidy
@@ -14,33 +14,32 @@ contributors:
   - bdwain
   - caryli
   - xgirma
-  - rushan
   - EugeneHlushko
   - AnayaDesign
   - aviyacohen
   - dhruvdutt
   - wizardofhogwarts
   - aholzner
-  
+
 related:
-  - title: 概念 - 模块热替换(hot module replacement)
+  - title: Concepts - Hot Module Replacement
     url: /concepts/hot-module-replacement
-  - title: API - 模块热替换(hot module replacement)
+  - title: API - Hot Module Replacement
     url: /api/hot-module-replacement
 ---
 
-T> 本指南继续沿用 [开发环境](/guides/development) 指南中的代码示例。
+T> This guide extends on code examples found in the [Development](/guides/development) guide.
 
-模块热替换(hot module replacement 或 HMR)是 webpack 提供的最有用的功能之一。它允许在运行时更新所有类型的模块，而无需完全刷新。本页面重点介绍其__实现__，而 [概念](/concepts/hot-module-replacement) 页面提供了更多关于它的工作原理以及为什么它有用的细节。
+Hot Module Replacement (or HMR) is one of the most useful features offered by webpack. It allows all kinds of modules to be updated at runtime without the need for a full refresh. This page focuses on __implementation__ while the [concepts page](/concepts/hot-module-replacement) gives more details on how it works and why it's useful.
 
-W> __HMR__ 不适用于生产环境，这意味着它应当用于开发环境。更多详细信息，请查看 [生产环境](/guides/production) 指南。
+W> __HMR__ is not intended for use in production, meaning it should only be used in development. See the [building for production guide](/guides/production) for more information.
 
 
-## 启用 HMR
+## Enabling HMR
 
-此功能可以很大程度提高生产效率。我们要做的就是更新 [webpack-dev-server](https://github.com/webpack/webpack-dev-server) 配置，然后使用 webpack 内置的 HMR 插件。我们还要删除掉 `print.js` 的入口起点，因为现在已经在 `index.js` 模块中引用了它。
+This feature is great for productivity. All we need to do is update our [webpack-dev-server](https://github.com/webpack/webpack-dev-server) configuration, and use webpack's built-in HMR plugin. We'll also remove the entry point for `print.js` as it will now be consumed by the `index.js` module.
 
-T> 如果你在技术选型中使用了 `webpack-dev-middleware` 而没有使用 `webpack-dev-server`，请使用 [`webpack-hot-middleware`](https://github.com/webpack-contrib/webpack-hot-middleware) package，以在你的自定义 server 或应用程序上启用 HMR。
+T> If you took the route of using `webpack-dev-middleware` instead of `webpack-dev-server`, please use the [`webpack-hot-middleware`](https://github.com/webpack-contrib/webpack-hot-middleware) package to enable HMR on your custom server or application.
 
 __webpack.config.js__
 
@@ -51,33 +50,31 @@ __webpack.config.js__
 
   module.exports = {
     entry: {
--      app: './src/index.js',
--      print: './src/print.js'
-+      app: './src/index.js'
+       app: './src/index.js',
+-      print: './src/print.js',
     },
     devtool: 'inline-source-map',
     devServer: {
       contentBase: './dist',
-+     hot: true
++     hot: true,
     },
     plugins: [
-      // 对于 CleanWebpackPlugin 的 v2 versions 以下版本，使用 new CleanWebpackPlugin(['dist/*'])
+      // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
-        title: 'Hot Module Replacement'
+        title: 'Hot Module Replacement',
       }),
-+     new webpack.HotModuleReplacementPlugin()
     ],
     output: {
       filename: '[name].bundle.js',
-      path: path.resolve(__dirname, 'dist')
-    }
+      path: path.resolve(__dirname, 'dist'),
+    },
   };
 ```
 
-T> 你可以通过命令来修改 [webpack-dev-server](https://github.com/webpack/webpack-dev-server) 的配置：`webpack-dev-server --hotOnly`。
+T> You can use the CLI to modify the [webpack-dev-server](https://github.com/webpack/webpack-dev-server) configuration with the following command: `webpack-dev-server --hotOnly`.
 
-现在，我们来修改 `index.js` 文件，以便当 `print.js` 内部发生变更时可以告诉 webpack 接受更新的模块。
+Now let's update the `index.js` file so that when a change inside `print.js` is detected we tell webpack to accept the updated module.
 
 __index.js__
 
@@ -109,14 +106,14 @@ __index.js__
 + }
 ```
 
-更改 `print.js` 中 `console.log` 的输出内容，你将会在浏览器中看到如下的输出（不要担心现在 `button.onclick = printMe()` 的输出，我们稍后也会更新该部分）。
+Start changing the `console.log` statement in `print.js`, and you should see the following output in the browser console (don't worry about that `button.onclick = printMe` output for now, we will also update that part later).
 
 __print.js__
 
 ``` diff
   export default function printMe() {
 -   console.log('I get called from print.js!');
-+   console.log('Updating print.js...')
++   console.log('Updating print.js...');
   }
 ```
 
@@ -135,13 +132,13 @@ main.js:4395 [WDS] Hot Module Replacement enabled.
 ```
 
 
-## 通过 Node.js API
+## Via the Node.js API
 
-在 Node.js API 中使用 webpack dev server 时，不要将 dev server 选项放在 webpack 配置对象(webpack config object)中。而是，在创建时，将其作为第二个参数传递。例如：
+When using Webpack Dev Server with the Node.js API, don't put the dev server options on the webpack configuration object. Instead, pass them as a second parameter upon creation. For example:
 
 `new WebpackDevServer(compiler, options)`
 
-想要启用 HMR，还需要修改 webpack 配置对象，使其包含 HMR 入口起点。`webpack-dev-server` package 中具有一个叫做 `addDevServerEntrypoints` 的方法，你可以通过使用这个方法来实现。这是关于如何使用的一个基本示例：
+To enable HMR, you also need to modify your webpack configuration object to include the HMR entry points. The `webpack-dev-server` package includes a method called `addDevServerEntrypoints` which you can use to do this. Here's a small example of how that might look:
 
 __dev-server.js__
 
@@ -153,7 +150,7 @@ const config = require('./webpack.config.js');
 const options = {
   contentBase: './dist',
   hot: true,
-  host: 'localhost'
+  host: 'localhost',
 };
 
 webpackDevServer.addDevServerEntrypoints(config, options);
@@ -165,16 +162,16 @@ server.listen(5000, 'localhost', () => {
 });
 ```
 
-T> 如果你正在使用 [`webpack-dev-middleware`](/guides/development#using-webpack-dev-middleware)，可以通过 [`webpack-hot-middleware`](https://github.com/webpack-contrib/webpack-hot-middleware) package，在自定义 dev server 中启用 HMR。
+T> If you're [using `webpack-dev-middleware`](/guides/development/#using-webpack-dev-middleware), check out the [`webpack-hot-middleware`](https://github.com/webpack-contrib/webpack-hot-middleware) package to enable HMR on your custom dev server.
 
 
-## 问题
+## Gotchas
 
-模块热替换可能比较难以掌握。为了说明这一点，我们回到刚才的示例中。如果你继续点击示例页面上的按钮，你会发现控制台仍在打印旧的 `printMe` 函数。
+Hot Module Replacement can be tricky. To show this, let's go back to our working example. If you go ahead and click the button on the example page, you will realize the console is printing the old `printMe` function.
 
-这是因为按钮的 `onclick` 事件处理函数仍然绑定在旧的 `printMe` 函数上。
+This is happening because the button's `onclick` event handler is still bound to the original `printMe` function.
 
-为了让 HMR 正常工作，我们需要更新代码，使用 `module.hot.accept` 将其绑定到新的 `printMe` 函数上：
+To make this work with HMR we need to update that binding to the new `printMe` function using `module.hot.accept`:
 
 __index.js__
 
@@ -189,7 +186,7 @@ __index.js__
     element.innerHTML = _.join(['Hello', 'webpack'], ' ');
 
     btn.innerHTML = 'Click me and check the console!';
-    btn.onclick = printMe;  // onclick 事件绑定原始的 printMe 函数上
+    btn.onclick = printMe;  // onclick event is bind to the original printMe function
 
     element.appendChild(btn);
 
@@ -197,7 +194,7 @@ __index.js__
   }
 
 - document.body.appendChild(component());
-+ let element = component(); // 存储 element，以在 print.js 修改时重新渲染
++ let element = component(); // Store the element to re-render on print.js changes
 + document.body.appendChild(element);
 
   if (module.hot) {
@@ -205,26 +202,26 @@ __index.js__
       console.log('Accepting the updated printMe module!');
 -     printMe();
 +     document.body.removeChild(element);
-+     element = component(); // 重新渲染 "component"，以便更新 click 事件处理函数
++     element = component(); // Re-render the "component" to update the click handler
 +     document.body.appendChild(element);
     })
   }
 ```
 
-这仅仅是一个示例，还有很多让人易于犯错的情况。幸运的是，有很多 loader（下面会提到一些）可以使得模块热替换变得更加容易。
+This is just one example, but there are many others that can easily trip people up. Luckily, there are a lot of loaders out there (some of which are mentioned below) that will make hot module replacement much easier.
 
 
-## HMR 加载样式
+## HMR with Stylesheets
 
-借助于 `style-loader`，使用模块热替换来加载 CSS 实际上极其简单。此 loader 在幕后使用了 `module.hot.accept`，在 CSS 依赖模块更新之后，会将其 patch(修补) 到 `<style>` 标签中。
+Hot Module Replacement with CSS is actually fairly straightforward with the help of the `style-loader`. This loader uses `module.hot.accept` behind the scenes to patch `<style>` tags when CSS dependencies are updated.
 
-首先使用以下命令安装两个 loader ：
+First let's install both loaders with the following command:
 
 ```bash
 npm install --save-dev style-loader css-loader
 ```
 
-然后更新配置文件，使用这两个 loader。
+Now let's update the configuration file to make use of the loader.
 
 __webpack.config.js__
 
@@ -235,36 +232,36 @@ __webpack.config.js__
 
   module.exports = {
     entry: {
-      app: './src/index.js'
+      app: './src/index.js',
     },
     devtool: 'inline-source-map',
     devServer: {
       contentBase: './dist',
-      hot: true
+      hot: true,
     },
 +   module: {
 +     rules: [
 +       {
 +         test: /\.css$/,
-+         use: ['style-loader', 'css-loader']
-+       }
-+     ]
++         use: ['style-loader', 'css-loader'],
++       },
++     ],
 +   },
     plugins: [
-      // 对于 CleanWebpackPlugin 的 v2 versions 以下版本，使用 new CleanWebpackPlugin(['dist/*'])
+      // new CleanWebpackPlugin(['dist/*']) for < v2 versions of CleanWebpackPlugin
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
-        title: '模块热替换'
-      })
+        title: 'Hot Module Replacement',
+      }),
     ],
     output: {
       filename: '[name].bundle.js',
-      path: path.resolve(__dirname, 'dist')
-    }
+      path: path.resolve(__dirname, 'dist'),
+    },
   };
 ```
 
-如同 import 模块，热加载样式表同样很简单：
+Hot loading stylesheets is as easy as importing them into a module:
 
 __project__
 
@@ -323,7 +320,7 @@ __index.js__
 
 ```
 
-将 `body` 的 style 改为 `background: red;`，你应该可以立即看到页面的背景颜色随之更改，而无需完全刷新。
+Change the style on `body` to `background: red;` and you should immediately see the page's background color change without a full refresh.
 
 __styles.css__
 
@@ -335,13 +332,14 @@ __styles.css__
 ```
 
 
-## 其他代码和框架
+## Other Code and Frameworks
 
-社区还提供许多其他 loader 和示例，可以使 HMR 与各种框架和库平滑地进行交互……
+There are many other loaders and examples out in the community to make HMR interact smoothly with a variety of frameworks and libraries...
 
-- [React Hot Loader](https://github.com/gaearon/react-hot-loader)：实时调整 react 组件。
-- [Vue Loader](https://github.com/vuejs/vue-loader)：此 loader 支持 vue 组件的 HMR，提供开箱即用体验。
-- [Elm Hot webpack Loader](https://github.com/klazuka/elm-hot-webpack-loader)：支持 Elm 编程语言的 HMR。
-- [Angular HMR](https://github.com/gdi2290/angular-hmr)：没有必要使用 loader！直接修改 NgModule 主文件就够了，它可以完全控制 HMR API。
+- [React Hot Loader](https://github.com/gaearon/react-hot-loader): Tweak react components in real time.
+- [Vue Loader](https://github.com/vuejs/vue-loader): This loader supports HMR for vue components out of the box.
+- [Elm Hot webpack Loader](https://github.com/klazuka/elm-hot-webpack-loader): Supports HMR for the Elm programming language.
+- [Angular HMR](https://github.com/gdi2290/angular-hmr): No loader necessary! A simple change to your main NgModule file is all that's required to have full control over the HMR APIs.
+- [Svelte Loader](https://github.com/sveltejs/svelte-loader): This loader supports HMR for Svelte components out of the box.
 
-T> 如果你知道任何其他 loader 或 plugin，能够有助于或增强模块热替换(hot module replacement)，请提交一个 pull request 以添加到此列表中！
+T> If you know of any other loaders or plugins that help with or enhance HMR, please submit a pull request to add them to this list!

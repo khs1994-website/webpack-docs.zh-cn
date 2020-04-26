@@ -1,8 +1,8 @@
 ---
-title: 命令行接口
-sort: 2
+title: Command Line Interface
+sort: 1
 contributors:
-  - ev1stensberg
+  - evenstensberg
   - simon04
   - tbroadley
   - chenxsan
@@ -10,6 +10,10 @@ contributors:
   - madhavarshney
   - EugeneHlushko
   - byzyk
+  - wizardofhogwarts
+  - EslamHiko
+  - smelukov
+  - anikethsaha
 related:
   - title: Analyzing Build Statistics
     url: https://survivejs.com/webpack/optimizing-build/analyzing-build-statistics/
@@ -19,25 +23,25 @@ related:
     url: https://hackernoon.com/optimising-your-application-bundle-size-with-webpack-e85b00bab579#.5w5ko08pq
   - title: Analyzing & optimizing your webpack bundle
     url: https://medium.com/@ahmedelgabri/analyzing-optimizing-your-webpack-bundle-8590818af4df#.hce4vdjs9
-  - title: Analysing and minimising the size of client side bundle with webpack and source-map-explorer
+  - title: Analysing and minimising the size of client-side bundle with webpack and source-map-explorer
     url: https://medium.com/@nimgrg/analysing-and-minimising-the-size-of-client-side-bundle-with-webpack-and-source-map-explorer-41096559beca#.c3t2srr8x
 ---
 
-为了更合适且方便地使用配置，可以在 `webpack.config.js` 中对 webpack 进行配置。CLI 中传入的任何参数会在配置文件中映射为对应的参数。
+For proper usage and easy distribution of this configuration, webpack can be configured with `webpack.config.js`. Any parameters sent to the CLI will map to a corresponding parameter in the configuration file.
 
-如果你还没有安装过 webpack 和 CLI，请先阅读 [安装指南](/guides/installation)。
+Read the [installation guide](/guides/installation) if you don't already have webpack and CLI installed.
 
 
-## 使用配置文件的用法
+## Usage with configuration file
 
-```sh
+```bash
 webpack [--config webpack.config.js]
 ```
 
-配置文件中的相关选项，请参阅[配置](/configuration)。
+See [configuration](/configuration) for the options in the configuration file.
 
 
-## 不使用配置文件的用法
+## Usage without configuration file
 
 ```sh
 webpack <entry> [<entry>] -o <output>
@@ -45,15 +49,15 @@ webpack <entry> [<entry>] -o <output>
 
 __`<entry>`__
 
-一个文件名或一组被命名的文件名，作为构建项目的入口起点。你可以传递多个入口（每个入口在启动时加载）。如果传递一个形式为 `<name> = <request>` 的键值对，则可以创建一个额外的入口起点。它将被映射到配置选项(configuration option)的 `entry` 属性。
+A filename or a set of named filenames which act as the entry point to build your project. You can pass multiple entries (every entry is loaded on startup). If you pass a pair in the form `<name>=<request>`, you can create an additional entry point. It will be mapped to the configuration option `entry`.
 
 __`<output>`__
 
-要保存的 bundled 文件的路径和文件名。它将映射到配置选项 `output.path` 和 `output.filename`。
+A path and filename for the bundled file to be saved in. It will be mapped to the configuration options `output.path` and `output.filename`.
 
-__示例__
+__Example__
 
-假设你的项目结构像下面这样：
+If your project structure is as follows -
 
 ```bash
 .
@@ -69,7 +73,7 @@ __示例__
 webpack src/index.js -o dist/bundle.js
 ```
 
-打包源码，入口为 `index.js`，并且输出文件的路径为 `dist`，文件名为 `bundle.js`
+This will bundle your source code with entry as `index.js`, and the output bundle file will have a path of `dist`, and the filename will be `bundle.js`
 
 ```bash
 	| Asset     | Size    | Chunks      | Chunk Names |
@@ -80,10 +84,10 @@ webpack src/index.js -o dist/bundle.js
 ```
 
 ```bash
-webpack index=./src/index.js -o entry2=./src/index2.js dist/bundle.js
+webpack index=./src/index.js entry2=./src/index2.js -o dist/bundle.js
 ```
 
-以多个入口的方式打包文件
+This will form the bundle with both the files as separate entry points.
 
 ```bash
 	| Asset     | Size    | Chunks        | Chunk Names   |
@@ -95,44 +99,44 @@ webpack index=./src/index.js -o entry2=./src/index2.js dist/bundle.js
 ```
 
 
-### 常用配置
+### Common Options
 
-W> 注意，命令行接口(Command Line Interface)参数的优先级，高于配置文件参数。例如，如果将 [`--mode="production"`](/concepts/mode/#usage) 传入 webpack CLI，而配置文件使用的是 `development`，最终会使用 `production`。
+W> Note that Command Line Interface has a higher precedence for the arguments you use it with than your configuration file. For instance, if you pass [`--mode="production"`](/configuration/mode/#usage) to webpack CLI and your configuration file uses `development`, `production` will be used.
 
-__列出命令行所有可用的配置选项__
+__List all of the options available on the cli__
 
 ```bash
 webpack --help
 webpack -h
 ```
 
-__使用配置文件进行构建__
+__Build source using a configuration file__
 
-指定其它的[配置](/configuration)文件。配置文件默认为 `webpack.config.js`，如果你想使用其它配置文件，可以加入这个参数。
+Specifies a different [configuration](/configuration) file to pick up. Use this if you want to specify something different from `webpack.config.js`, which is the default.
 
 ```bash
 webpack --config example.config.js
 ```
 
-__以 JSON 格式输出 webpack 的运行结果__
+__Print result of webpack as a JSON__
 
 ```bash
 webpack --json
 webpack --json > stats.json
 ```
 
-在其他每个情况下，webpack 会打印一组统计信息，用于显示 bundle, chunk 和用时等详细信息。使用此选项，输出可以是 JSON 对象。此输出文件(response)可被 webpack 的[分析工具](https://webpack.github.com/analyse)，或 chrisbateman 的 [webpack 可视化工具](https://chrisbateman.github.io/webpack-visualizer/)，或 th0r 的 [webpack bundle 分析工具](https://github.com/webpack-contrib/webpack-bundle-analyzer)接收后进行分析。分析工具将接收 JSON 并以图形形式提供构建的所有细节。
+In every other case, webpack prints out a set of stats showing bundle, chunk and timing details. Using this option, the output can be a JSON object. This response is accepted by webpack's [analyse tool](https://webpack.github.io/analyse/), or chrisbateman's [webpack-visualizer](https://chrisbateman.github.io/webpack-visualizer/), or th0r's [webpack-bundle-analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer). The analyse tool will take in the JSON and provide all the details of the build in graphical form.
 
-### 环境选项
+### Environment Options
 
-当 webpack 配置对象[导出为一个函数](/configuration/configuration-types#exporting-a-function)时，可以向起传入一个"环境对象(environment)"。
+When the webpack configuration [exports a function](/configuration/configuration-types/#exporting-a-function), an "environment" may be passed to it.
 
 ```bash
-webpack --env.production    # 设置 env.production == true
-webpack --env.platform=web  # 设置 env.platform == "web"
+webpack --env.production    # sets env.production == true
+webpack --env.platform=web  # sets env.platform == "web"
 ```
 
-`--env` 参数具有多种语法 accepts various syntaxes:
+The `--env` argument accepts various syntaxes:
 
 Invocation                               | Resulting environment
 ---------------------------------------- | ---------------------------
@@ -144,38 +148,37 @@ Invocation                               | Resulting environment
 `webpack --env.prod --env min`           | `[{ prod: true }, "min"]`
 `webpack --env.prod=foo --env.prod=bar`  | `{prod: [ "foo", "bar" ]}`
 
-T> See the [environment variables](/guides/environment-variables) guide for more information on its usage.
+T> See the [environment variables](/guides/environment-variables/) guide for more information on its usage.
 
-### 配置选项
+### Configuration Options
 
-参数 | 说明 | 输入类型 | 默认值
+Parameter                 | Explanation                                 | Input type | Default
 ------------------------- | ------------------------------------------- | ---------- | ------------------
-`--config`                | 配置文件的路径 | string     | webpack.config.js 或 webpackfile.js
-`--config-register, -r`   | 在 webpack 配置文件加载前先预加载一个或多个模块 | array |
-`--config-name`           | 要使用的配置名称 | string |
-`--env`                   | 当配置文件是一个函数时，会将环境变量传给这个函数 |
-`--mode`                  | 用到的模式，"development" 或 "production" 之中的一个 | string |
+`--config`                | Path to the configuration file                                       | string | `webpack.config.js` or `webpackfile.js`
+`--config-register, -r`   | Preload one or more modules before loading the webpack configuration | array  |
+`--config-name`           | Name of the configuration to use                                     | string |
+`--env`                   | Environment passed to the configuration, when it is a function       |        |
+`--mode`                  | Mode to use                                                          | string | `'production'`
 
-### 输出配置
+### Output Options
 
-通过以下这些配置，你可以调整构建流程的某些[输出](/configuration/output)参数。
+This set of options allows you to manipulate certain [output](/configuration/output/) parameters of your build.
 
-参数 | 说明 | 输入类型 | 默认值
+Parameter                 | Explanation                                 | Input type | Default
 ------------------------- | ------------------------------------------- | ---------- | ------------------
-`--output-chunk-filename` | 输出的附带 chunk 的文件名   | string     | 含有 [id] 的文件名，而不是 [name] 或者 [id] 作为前缀
-`--output-filename`       | 打包文件的文件名           | string     | [name].js
-`--output-jsonp-function` | 加载 chunk 时使用的 JSONP 函数名 | string | webpackJsonp
-`--output-library`        | 以库的形式导出入口文件 | string |
-`--output-library-target` | 以库的形式导出入口文件时，输出的类型 | string | var
-`--output-path`           | 输出的路径（在公共路径的基础上）      | string     | 当前目录
-`--output-pathinfo`       | 加入一些依赖信息的注解 | boolean | false
-`--output-public-path`    | The 输出文件时使用的公共路径              | string     | /
-`--output-source-map-filename` | 生成的 SourceMap 的文件名  | string     | [name].map or [outputFilename].map
-`--build-delimiter` | 在构建输出之后，显示的自定义文本 | string | 默认字符串是 null。你可以提供一个 `=== Build done ===` 这样的字符串
+`--output-chunk-filename` | The output filename for additional chunks   | string     | filename with [id] instead of [name] or [id] prefixed
+`--output-filename`       | The output filename of the bundle           | string     | `[name].js`
+`--output-jsonp-function` | The name of the JSONP function used for chunk loading | string | `webpackJsonp`
+`--output-library`        | Expose the exports of the entry point as library | string |
+`--output-library-target` | The type for exposing the exports of the entry point as library | string | `var`
+`--output-path`           | The output path for compilation assets      | string     | Current directory
+`--output-pathinfo`       | Include a comment with the request for every dependency | boolean | `false`
+`--output-public-path`    | The public path for the assets              | string     | `/`
+`--output-source-map-filename` | The output filename for the SourceMap  | string     | `[name].map` or `[outputFilename].map`
+`--build-delimiter` | Display custom text after build output | string | Default string is null. You could provide a string such as `=== Build done ===`
 
 
-
-#### 示例用法
+#### Example Usage
 
 ```bash
 webpack index=./src/index.js index2=./src/index2.js --output-path='./dist' --output-filename='[name][hash].bundle.js'
@@ -204,119 +207,120 @@ webpack.js index=./src/index.js index2=./src/index2.js --output-path='./dist' --
 ```
 
 
-### Debug 配置
+### Debug Options
 
-以下这些配置可以帮助你在 Webpack 编译过程中更好地 debug。
+This set of options allows you to better debug the application containing assets compiled with webpack
 
-参数 | 说明 | 输入类型 | 默认值
+Parameter    | Explanation                                      | Input type | Default value
 ------------ | ------------------------------------------------ | ---------- | -------------
-`--debug`    | 把 loader 设置为 debug 模式 | boolean    | false
-`--devtool`  | 为打包好的资源定义 [source map 的类型] | string | -
-`--progress` | 打印出编译进度的百分比值 | boolean    | false
-`--display-error-details` | 展示错误细节 | boolean | false
+`--debug`    | Switch loaders to debug mode                     | boolean    | `false`
+`--devtool`  | Define [source map type](/configuration/devtool/) for the bundled resources | string | `-`
+`--progress` | Print compilation progress in percentage         | boolean    | `false`
+`--display-error-details` | Display details about errors | boolean | `false`
 
-### 模块配置
+### Module Options
 
-这些配置可以用于绑定 Webpack 允许的[模块](/configuration/module/)。
+These options allow you to bind [modules](/configuration/module/) as allowed by webpack
 
-参数 | 说明 | 用法
--------------------- | ---------------------------------- | ----------------
-`--module-bind`      | 为 loader 绑定一个文件扩展 | `--module-bind js=babel-loader`
-`--module-bind-post` | 为 post loader 绑定一个文件扩展 |
-`--module-bind-pre`  | 为 pre loader 绑定一个文件扩展 |
+Parameter            | Explanation                            | Usage
+-------------------- | -------------------------------------- | ----------------
+`--module-bind`      | Bind a file extension to a loader      | `--module-bind js=babel-loader`
+`--module-bind-post` | Bind a file extension to a post loader |
+`--module-bind-pre`  | Bind a file extension to a pre loader  |
 
 
-### Watch 选项
+### Watch Options
 
-这些配置可以用于[观察](/configuration/watch/)依赖文件的变化，一旦有变化，则可以重新执行构建流程。
+These options make the build [watch](/configuration/watch/) for changes in files of the dependency graph and perform the build again.
 
-参数 | 说明
+Parameter                 | Explanation
 ------------------------- | ----------------------
-`--watch`, `-w`           | 观察文件系统的变化
-`--watch-aggregate-timeout` | 指定一个毫秒数，在这个时间内，文件若发送了多次变化，会被合并
-`--watch-poll`            | 轮询观察文件变化的时间间隔（同时会打开轮询机制）
-`--watch-stdin`, `--stdin` | 当 stdin 关闭时，退出进程
+`--watch`, `-w`           | Watch the filesystem for changes
+`--watch-aggregate-timeout` | Timeout for gathering changes while watching
+`--watch-poll`            | The polling interval for watching (also enable polling)
+`--watch-stdin`, `--stdin` | Exit the process when stdin is closed
 
 
-### 性能优化配置
+### Optimize Options
 
-在生产环境的构建时，这些配置可以用于调整的一些性能相关的配置。
+These options allow you to manipulate optimizations for a production build using webpack
 
-参数 | 说明 | 使用的插件
+Parameter                   | Explanation                                            | Plugin Used
 --------------------------- | -------------------------------------------------------|----------------------
-`--optimize-max-chunks`     | 限制 chunk 的数量 | [LimitChunkCountPlugin](/plugins/limit-chunk-count-plugin)
-`--optimize-min-chunk-size` | 限制 chunk 的最小体积               | [MinChunkSizePlugin](/plugins/min-chunk-size-plugin)
-`--optimize-minimize`       | 压缩混淆 javascript，并且把 loader 设置为 minimizing | [TerserPlugin](/plugins/terser-webpack-plugin/) & [LoaderOptionsPlugin](/plugins/loader-options-plugin/)
+`--optimize-max-chunks`     | Try to keep the chunk count below a limit              | [LimitChunkCountPlugin](/plugins/limit-chunk-count-plugin/)
+`--optimize-min-chunk-size` | Try to keep the chunk size above a limit               | [MinChunkSizePlugin](/plugins/min-chunk-size-plugin/)
+`--optimize-minimize`       | Minimize javascript and switches loaders to minimizing | [TerserPlugin](/plugins/terser-webpack-plugin/)
 
 
-### Resolve 配置
+### Resolve Options
 
-这些配置可以用于设置 webpack [resolver](/configuration/resolve/) 时使用的别名(alias)和扩展名(extension)。
+These allow you to configure the webpack [resolver](/configuration/resolve/) with aliases and extensions.
 
-参数 | 说明 | 示例
+Parameter              | Explanation                                             | Example
 ---------------------- | ------------------------------------------------------- | -------------
-`--resolve-alias`        | 指定模块的别名 | --resolve-alias jquery-plugin=jquery.plugin
-`--resolve-extensions`   | 指定需要被处理的文件的扩展名 | --resolve-extensions .es6 .js .ts
-`--resolve-loader-alias` | 最小化 JavaScript，并且将 loader 切换到最简 |
+`--resolve-alias`        | Setup a module alias for resolving                      | --resolve-alias jquery-plugin=jquery.plugin
+`--resolve-extensions`   | Setup extensions that should be used to resolve modules | --resolve-extensions .es6 .js .ts
+`--resolve-loader-alias` | Minimize javascript and switches loaders to minimizing  |
 
 
-### 统计数据配置
+### Stats Options
 
-以下选项用于配置 Webpack 在控制台输出的[统计数据](/configuration/stats/)，以及这些数据的样式。
+These options allow webpack to display various [stats](/configuration/stats/) and style them differently in the console output.
 
-参数 | 说明 | Type
+Parameter                        | Explanation                                                        | Type
 -------------------------------- | ------------------------------------------------------------------ | -------
-`--color`, `--colors`            | 强制在控制台开启颜色 [默认：仅对 TTY 输出启用] | boolean
-`--no-color`, `--no-colors`      | 强制在控制台关闭颜色 | boolean
-`--display`                      | 选择[显示预设](/configuration/stats)(verbose - 繁琐, detailed - 细节, normal - 正常, minimal - 最小, errors-only - 仅错误, none - 无; 从 webpack 3.0.0 开始) | string
-`--display-cached` | 在输出中显示缓存的模块 | boolean
-`--display-cached-assets` | 在输出中显示缓存的 assets | boolean
-`--display-chunks` | 在输出中显示 chunks | boolean
-`--display-depth` | 显示从入口起点到每个模块的距离 | boolean
-`--display-entrypoints`   | 在输出中显示入口文件 | boolean
-`--display-error-details` | 显示详细的错误信息 | boolean
-`--display-exclude`       | 在输出中显示被排除的文件 | boolean
-`--display-max-modules`          | 设置输出中可见模块的最大数量 | number
-`--display-modules` | 在输出中显示所有模块，包括被排除的模块 | boolean
-`--display-optimization-bailout` | 作用域提升回退触发器(Scope hoisting fallback trigger)（从 webpack 3.0.0 开始） | boolean
-`--display-origins` | 在输出中显示最初的 chunk | boolean
-`--display-provided-exports`     | 显示有关从模块导出的信息 | boolean
-`--display-reasons` | 显示模块包含在输出中的原因 | boolean
-`--display-used-exports` | 显示模块中被使用的接口（Tree Shaking） | boolean
-`--hide-modules` | 隐藏关于模块的信息 | boolean
-`--sort-assets-by` | 对 assets 列表以某种属性排序 | string
-`--sort-chunks-by`               | 对 chunks 列表以某种属性排序 | string
-`--sort-modules-by`              | 对模块列表以某种属性排序 | string
-`--verbose`                      | 显示更多信息 | boolean
+`--color`, `--colors`            | Force colors on the console [default: enabled for TTY output only] | `boolean`
+`--no-color`, `--no-colors`      | Force no colors on the console                                     | `boolean`
+`--display`                      | Select [display preset](/configuration/stats) (verbose, detailed, normal, minimal, errors-only, none; since webpack 3.0.0) | `string`
+`--display-cached`               | Display also cached modules in the output                          | `boolean`
+`--display-cached-assets`        | Display also cached assets in the output                           | `boolean`
+`--display-chunks`               | Display chunks in the output                                       | `boolean`
+`--display-depth`                | Display distance from entry point for each module                  | `boolean`
+`--display-entrypoints`          | Display entry points in the output                                 | `boolean`
+`--display-error-details`        | Display details about errors                                       | `boolean`
+`--display-exclude`              | Exclude modules in the output                                      | `boolean`
+`--display-max-modules`          | Set the maximum number of visible modules in output                | `number`
+`--display-modules`              | Display even excluded modules in the output                        | `boolean`
+`--display-optimization-bailout` | Scope hoisting fallback trigger (since webpack 3.0.0)              | `boolean`
+`--display-origins`              | Display origins of chunks in the output                            | `boolean`
+`--display-provided-exports`     | Display information about exports provided from modules            | `boolean`
+`--display-reasons`              | Display reasons about module inclusion in the output               | `boolean`
+`--display-used-exports`         | Display information about used exports in modules (Tree Shaking)   | `boolean`
+`--hide-modules`                 | Hide info about modules                                            | `boolean`
+`--sort-assets-by`               | Sort the assets list by property in asset                          | `string`
+`--sort-chunks-by`               | Sort the chunks list by property in chunk                          | `string`
+`--sort-modules-by`              | Sort the modules list by property in module                        | `string`
+`--verbose`                      | Show more details                                                  | `boolean`
 
 
-### 高级配置
+### Advanced Options
 
-参数 | 说明 | 用法
+Parameter         | Explanation                              | Usage
 ----------------- | ---------------------------------------- | -----
-`--bail` | 一旦发生错误，立即终止 |
-`--cache` | 开启缓存 [watch 时会默认打开] | `--cache=false`
-`--define` | 定义 bundle 中的任意自由变量，查看 [shimming](/guides/shimming) | `--define process.env.NODE_ENV="'development'"`
-`--hot`           | 开启[模块热替换](/concepts/hot-module-replacement) | `--hot=true`
-`--labeled-modules` | 开启模块标签 [使用 LabeledModulesPlugin] |
-`--plugin`        | 加载某个[插件](/configuration/plugins/) |
-`--prefetch`      | 预加载某个文件 | `--prefetch=./files.js`
-`--provide`       | 在所有模块中将这些模块提供为自由变量，查看 [shimming](/guides/shimming) | `--provide jQuery=jquery`
-`--records-input-path` | 记录文件的路径（读取） |
-`--records-output-path` | 记录文件的路径（写入） |
-`--records-path`  | 记录文件的路径 |
-`--target`        | [目标](/configuration/target/)的执行环境 | `--target='node'`
+`--bail`          | Abort the compilation on first error     |
+`--cache`         | Enable in memory caching [Enabled by default for watch] | `--cache=false`
+`--define`        | Define any free variable, see [shimming](/guides/shimming/) | `--define process.env.NODE_ENV="'development'"`
+`--hot`           | Enables [Hot Module Replacement](/concepts/hot-module-replacement/) | `--hot=true`
+`--labeled-modules` | Enables labeled modules [Uses LabeledModulesPlugin] |
+`--live-reload`           | Enables live reloading | `--live-reload=true`
+`--plugin`        | Load this [plugin](/configuration/plugins/) |
+`--prefetch`      | Prefetch the particular file             | `--prefetch=./files.js`
+`--provide`       | Provide these modules as globals, see [shimming](/guides/shimming/) | `--provide jQuery=jquery`
+`--records-input-path` | Path to the records file (reading)  |
+`--records-output-path` | Path to the records file (writing) |
+`--records-path`  | Path to the records file                 |
+`--target`        | The [targeted](/configuration/target/) execution environment | `--target='node'`
 
-### 简写
+### Shortcuts
 
-简写 | 含义
+Shortcut | Replaces
 ---------|----------------------------
 -d       | `--debug --devtool cheap-module-eval-source-map --output-pathinfo`
--p       | `--optimize-minimize --define process.env.NODE_ENV="production"`, see [building for production](/guides/production)
+-p       | `--mode production`, see [building for production](/guides/production/)
 
 ### Profiling
 
-`--profile` 选项捕获编译时每个步骤的时间信息，并且将这些信息包含在输出中。
+The `--profile` option captures timing information for each step of the compilation and includes this in the output.
 
 ```bash
 webpack --profile
@@ -332,7 +336,7 @@ For each module, the following details are included in the output as applicable:
 - `building`: time to build the module (e.g. loaders and parsing)
 - `dependencies`: time to identify and connect the module’s dependencies
 
-Paired with `--progress`, `--profile` gives you an in depth idea of which step in the compilation is taking how long. This can help you optimise your build in a more informed manner.
+Paired with `--progress`, `--profile` gives you an in-depth idea of which step in the compilation is taking how long. This can help you optimize your build in a more informed manner.
 
 ```bash
 webpack --progress --profile
@@ -363,4 +367,20 @@ webpack --progress --profile
 1ms asset optimization
 6ms emitting
 ⋮
+```
+
+## Pass CLI arguments to Node.js
+
+To pass arguments directly to Node.js process, you can use the `--node-args` option. All other flags and options will be received by the webpack-cli.
+
+For example, to increase the memory limit of Node.js process to 4 GB
+
+```bash
+webpack --node-args="--max-old-space-size=4096"
+```
+
+Also, you can pass multiple options to Node.js process
+
+```bash
+webpack --node-args="--max-old-space-size=4096" --node-args="-r /path/to/preload/file.js"
 ```

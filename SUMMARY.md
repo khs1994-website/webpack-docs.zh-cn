@@ -26,7 +26,7 @@
   * [输出(output)](concepts/output.md)
   * [Plugin](concepts/plugins.md)
   * [Targets](concepts/targets.md)
-  * [Under The Hood](concepts/under-the-hood.md)
+  * [揭示内部原理](concepts/under-the-hood.md)
   * [为什么选择 webpack](concepts/why-webpack.md)
 - Configuration
   * [Configuration Languages](configuration/configuration-languages.md)

@@ -2,9 +2,9 @@
 
 - Api
   * [Command Line Interface](api/cli.md)
-  * [Compilation Hooks](api/compilation-hooks.md)
+  * [compilation 钩子](api/compilation-hooks.md)
   * [Compilation Object](api/compilation-object.md)
-  * [Compiler Hooks](api/compiler-hooks.md)
+  * [compiler 钩子](api/compiler-hooks.md)
   * [Hot Module Replacement](api/hot-module-replacement.md)
   * [Introduction](api/index.md)
   * [Loader Interface](api/loaders.md)

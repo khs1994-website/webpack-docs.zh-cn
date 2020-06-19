@@ -37,7 +37,7 @@
   * [Entry And Context](configuration/entry-context.md)
   * [实验特性(experiments)](configuration/experiments.md)
   * [外部扩展(externals)](configuration/externals.md)
-  * [Mode](configuration/mode.md)
+  * [模式（Mode）](configuration/mode.md)
   * [Node](configuration/node.md)
   * [优化(Optimization)](configuration/optimization.md)
   * [其它选项](configuration/other-options.md)

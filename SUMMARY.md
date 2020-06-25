@@ -161,7 +161,7 @@
   * [Uglifyjs Webpack Plugin](plugins/uglifyjs-webpack-plugin.md)
   * [Watch Ignore Plugin](plugins/watch-ignore-plugin.md)
   * [Zopfli Webpack Plugin](plugins/zopfli-webpack-plugin.md)
-* [Branding Guidelines](branding.md)
+* [品牌指南](branding.md)
 * [Comparison](comparison.md)
 * [Glossary](glossary.md)
 * [遵循许可](license.md)

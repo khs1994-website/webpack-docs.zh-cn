@@ -13,7 +13,7 @@
   * [Module Variables](api/module-variables.md)
   * [Javascript Parser Hooks](api/parser.md)
   * [Plugin API](api/plugins.md)
-  * [Resolvers](api/resolvers.md)
+  * [解析器（Resolvers）](api/resolvers.md)
 - Concepts
   * [配置（Configuration）](concepts/configuration.md)
   * [依赖图(dependency graph)](concepts/dependency-graph.md)
@@ -34,7 +34,7 @@
   * [Configuration Types](configuration/configuration-types.md)
   * [Dev Server](configuration/dev-server.md)
   * [Devtool](configuration/devtool.md)
-  * [Entry And Context](configuration/entry-context.md)
+  * [入口和上下文(entry and context)](configuration/entry-context.md)
   * [实验特性(experiments)](configuration/experiments.md)
   * [外部扩展(externals)](configuration/externals.md)
   * [模式（Mode）](configuration/mode.md)

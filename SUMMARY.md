@@ -163,7 +163,7 @@
   * [Zopfli Webpack Plugin](plugins/zopfli-webpack-plugin.md)
 * [品牌指南](branding.md)
 * [Comparison](comparison.md)
-* [Glossary](glossary.md)
+* [术语表](glossary.md)
 * [遵循许可](license.md)
 * [Webpack](README.md)
 * [Vote](vote.md)

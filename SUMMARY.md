@@ -41,7 +41,7 @@
   * [Node](configuration/node.md)
   * [优化(Optimization)](configuration/optimization.md)
   * [其它选项](configuration/other-options.md)
-  * [Output](configuration/output.md)
+  * [输出(output)](configuration/output.md)
   * [性能(performance)](configuration/performance.md)
   * [插件(Plugins)](configuration/plugins.md)
   * [解析(Resolve)](configuration/resolve.md)
@@ -117,7 +117,7 @@
   * [Val Loader](loaders/val-loader.md)
   * [Worker Loader](loaders/worker-loader.md)
 - Migrate
-  * [To V 2 Or V 3 From V 1](migrate/3.md)
+  * [从 v1 升级到 v2 或 v3](migrate/3.md)
   * [To V 4 From V 3](migrate/4.md)
   * [从 v4 升级到 v5](migrate/5.md)
   * [Migrate](migrate/index.md)

@@ -32,7 +32,7 @@
 - Configuration
   * [Configuration Languages](configuration/configuration-languages.md)
   * [Configuration Types](configuration/configuration-types.md)
-  * [Dev Server](configuration/dev-server.md)
+  * [开发服务器(DevServer)](configuration/dev-server.md)
   * [Devtool](configuration/devtool.md)
   * [入口和上下文(entry and context)](configuration/entry-context.md)
   * [实验特性(experiments)](configuration/experiments.md)

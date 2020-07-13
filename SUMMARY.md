@@ -1,7 +1,7 @@
 # [Webpack 中文文档](https://github.com/docschina/webpack.js.org)
 
 - Api
-  * [Command Line Interface](api/cli.md)
+  * [命令行接口](api/cli.md)
   * [compilation 钩子](api/compilation-hooks.md)
   * [Compilation Object](api/compilation-object.md)
   * [compiler 钩子](api/compiler-hooks.md)

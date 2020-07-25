@@ -86,7 +86,6 @@
   * [Type Script](guides/typescript.md)
 - Loaders
   * [Babel Loader](loaders/babel-loader.md)
-  * [Bundle Loader](loaders/bundle-loader.md)
   * [Cache Loader](loaders/cache-loader.md)
   * [Coffee Loader](loaders/coffee-loader.md)
   * [Css Loader](loaders/css-loader.md)
@@ -112,7 +111,6 @@
   * [Style Loader](loaders/style-loader.md)
   * [Svg Inline Loader](loaders/svg-inline-loader.md)
   * [Thread Loader](loaders/thread-loader.md)
-  * [Transform Loader](loaders/transform-loader.md)
   * [Url Loader](loaders/url-loader.md)
   * [Val Loader](loaders/val-loader.md)
   * [Worker Loader](loaders/worker-loader.md)

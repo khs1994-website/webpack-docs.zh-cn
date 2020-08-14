@@ -129,6 +129,7 @@
   * [Context Exclusion Plugin](plugins/context-exclusion-plugin.md)
   * [Context Replacement Plugin](plugins/context-replacement-plugin.md)
   * [Copy Webpack Plugin](plugins/copy-webpack-plugin.md)
+  * [Css Minimizer Webpack Plugin](plugins/css-minimizer-webpack-plugin.md)
   * [Define Plugin](plugins/define-plugin.md)
   * [Dll Plugin](plugins/dll-plugin.md)
   * [Environment Plugin](plugins/environment-plugin.md)

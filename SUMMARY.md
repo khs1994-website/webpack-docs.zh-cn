@@ -106,6 +106,7 @@
   * [Polymer Webpack Loader](loaders/polymer-webpack-loader.md)
   * [Postcss Loader](loaders/postcss-loader.md)
   * [Raw Loader](loaders/raw-loader.md)
+  * [Remark Loader](loaders/remark-loader.md)
   * [Sass Loader](loaders/sass-loader.md)
   * [Source Map Loader](loaders/source-map-loader.md)
   * [Style Loader](loaders/style-loader.md)

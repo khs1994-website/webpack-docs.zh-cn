@@ -14,6 +14,9 @@
   * [Javascript Parser Hooks](api/parser.md)
   * [Plugin API](api/plugins.md)
   * [解析器（Resolvers）](api/resolvers.md)
+- Blog
+  * [Webpack 5 Release 2020 10 10](blog/2020-10-10-webpack-5-release.md)
+  * [Blog](blog/index.md)
 - Concepts
   * [配置（Configuration）](concepts/configuration.md)
   * [依赖图(dependency graph)](concepts/dependency-graph.md)
@@ -68,6 +71,7 @@
   * [依赖管理](guides/dependency-management.md)
   * [开发 - Vagrant](guides/development-vagrant.md)
   * [开发环境](guides/development.md)
+  * [ECMA Script Modules](guides/ecma-script-modules.md)
   * [entry 高级用法](guides/entry-advanced.md)
   * [环境变量](guides/environment-variables.md)
   * [起步](guides/getting-started.md)
@@ -77,6 +81,7 @@
   * [集成](guides/integrations.md)
   * [懒加载](guides/lazy-loading.md)
   * [管理输出](guides/output-management.md)
+  * [Package Exports](guides/package-exports.md)
   * [生产环境](guides/production.md)
   * [渐进式网络应用程序](guides/progressive-web-application.md)
   * [公共路径](guides/public-path.md)

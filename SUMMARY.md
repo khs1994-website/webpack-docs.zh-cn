@@ -15,7 +15,7 @@
   * [Plugin API](api/plugins.md)
   * [解析器（Resolvers）](api/resolvers.md)
 - Blog
-  * [Webpack 5 Release 2020 10 10](blog/2020-10-10-webpack-5-release.md)
+  * [Webpack 5 发布 (2020-10-10)](blog/2020-10-10-webpack-5-release.md)
   * [Blog](blog/index.md)
 - Concepts
   * [配置（Configuration）](concepts/configuration.md)

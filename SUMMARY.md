@@ -2,7 +2,6 @@
 
 - Api
   * [命令行接口（CLI）](api/cli.md)
-  * [compilation 钩子](api/compilation-hooks.md)
   * [Compilation Object](api/compilation-object.md)
   * [compiler 钩子](api/compiler-hooks.md)
   * [Hot Module Replacement](api/hot-module-replacement.md)
@@ -16,6 +15,7 @@
   * [解析器（Resolvers）](api/resolvers.md)
 - Blog
   * [Webpack 5 发布 (2020-10-10)](blog/2020-10-10-webpack-5-release.md)
+  * [Roadmap 2021 2020 12 08](blog/2020-12-08-roadmap-2021.md)
   * [Blog](blog/index.md)
 - Concepts
   * [配置（Configuration）](concepts/configuration.md)
@@ -150,7 +150,6 @@
   * [Ignore Plugin](plugins/ignore-plugin.md)
   * [Image Minimizer Webpack Plugin](plugins/image-minimizer-webpack-plugin.md)
   * [Plugins](plugins/index.md)
-  * [Internal Webpack Plugins](plugins/internal-plugins.md)
   * [Json Minimizer Webpack Plugin](plugins/json-minimizer-webpack-plugin.md)
   * [Limit Chunk Count Plugin](plugins/limit-chunk-count-plugin.md)
   * [Min Chunk Size Plugin](plugins/min-chunk-size-plugin.md)

@@ -9,7 +9,6 @@
   * [Loader Interface](api/loaders.md)
   * [Logger 接口](api/logging.md)
   * [模块方法](api/module-methods.md)
-  * [Module Variables](api/module-variables.md)
   * [Javascript Parser Hooks](api/parser.md)
   * [Plugin API](api/plugins.md)
   * [解析器（Resolvers）](api/resolvers.md)

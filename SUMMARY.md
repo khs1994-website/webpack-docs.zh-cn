@@ -41,7 +41,6 @@
   * [实验特性(experiments)](configuration/experiments.md)
   * [模式（Mode）](configuration/mode.md)
   * [Node](configuration/node.md)
-  * [优化(Optimization)](configuration/optimization.md)
   * [其它选项](configuration/other-options.md)
   * [性能(performance)](configuration/performance.md)
   * [插件(Plugins)](configuration/plugins.md)

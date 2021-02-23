@@ -34,7 +34,6 @@
   * [为什么选择 webpack](concepts/why-webpack.md)
 - Configuration
   * [Configuration Languages](configuration/configuration-languages.md)
-  * [Configuration Types](configuration/configuration-types.md)
   * [开发服务器(DevServer)](configuration/dev-server.md)
   * [Devtool](configuration/devtool.md)
   * [入口和上下文(entry and context)](configuration/entry-context.md)

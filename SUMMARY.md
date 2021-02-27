@@ -65,7 +65,7 @@
   * [依赖管理](guides/dependency-management.md)
   * [开发 - Vagrant](guides/development-vagrant.md)
   * [开发环境](guides/development.md)
-  * [ECMA Script Modules](guides/ecma-script-modules.md)
+  * [ECMAScript 模块](guides/ecma-script-modules.md)
   * [entry 高级用法](guides/entry-advanced.md)
   * [环境变量](guides/environment-variables.md)
   * [起步](guides/getting-started.md)
